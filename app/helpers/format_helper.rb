@@ -1,0 +1,77 @@
+module FormatHelper
+  # ==========================================
+  # GENERIC DISPLAY
+  # ==========================================
+
+  def display_value(value, placeholder: "—")
+    if value.blank?
+      return tag.span(placeholder, class: "text-base-content/40 font-mono text-sm select-none")
+    end
+    block_given? ? yield(value) : value
+  end
+
+  # ==========================================
+  # DATE & TIME
+  # ==========================================
+
+  def format_date(date, format: :default)
+    return display_value(nil) if date.nil?
+    l(date.to_date, format: format)
+  end
+
+  def format_datetime(datetime, format: :default)
+    return display_value(nil) if datetime.nil?
+    l(datetime, format: format)
+  end
+
+  def format_time_ago(datetime)
+    return display_value(nil) if datetime.nil?
+    tag.span(title: l(datetime, format: :long)) do
+      time_ago_in_words(datetime)
+    end
+  end
+
+  # ==========================================
+  # MONEY & NUMBERS
+  # ==========================================
+
+  # Modificato per supportare il tuo concern Monetizable
+  def format_money(amount, currency: "EUR")
+    return display_value(nil) if amount.nil?
+
+    number_to_currency(amount, unit: currency == "EUR" ? "€" : currency)
+  end
+
+  def format_percentage(number, precision: 0)
+    return display_value(nil) unless number
+    # Assumiamo che 0.5 significhi 50%
+    number_to_percentage(number * 100, precision: precision)
+  end
+
+  # ==========================================
+  # CONTACTS & STRINGS
+  # ==========================================
+
+  def format_phone(phone)
+    return display_value(nil) if phone.blank?
+    if defined?(Phonelib)
+      parsed = Phonelib.parse(phone)
+      return parsed.full_international if parsed.valid?
+    end
+    phone
+  end
+
+  def format_email(email)
+    display_value(email) do |e|
+      link_to(e, "mailto:#{e}", class: "link link-hover")
+    end
+  end
+
+  # ==========================================
+  # BOOLEANS
+  # ==========================================
+
+  def format_boolean(bool, true_text: "Sì", false_text: "No")
+    bool ? true_text : false_text
+  end
+end

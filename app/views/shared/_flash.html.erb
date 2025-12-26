@@ -1,0 +1,24 @@
+<div class="toast toast-top toast-end z-50">
+  <% flash.each do |type, message| %>
+    <% next if type.to_s == 'timedout' %>
+
+    <div
+      class="alert <%= flash_class(type) %> shadow-lg mb-2 flex flex-row items-center gap-2 transform transition-all duration-300 min-w-[300px]"
+      data-controller="flash"
+    >
+      <%# Icona %>
+      <%= icon(flash_icon(type), size: 24) %>
+
+      <%# Messaggio %>
+      <span class="flex-1 text-sm font-medium"><%= message %></span>
+
+      <%# Tasto Chiudi %>
+      <button
+        class="btn btn-square btn-xs btn-ghost"
+        data-action="click->flash#dismiss"
+      >
+        <%= icon("close", size: 16) %>
+      </button>
+    </div>
+  <% end %>
+</div>
