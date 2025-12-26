@@ -4,7 +4,7 @@ class SubscriptionLifecycleTest < ActiveSupport::TestCase
   setup do
     @member = members(:alice)
     @user = users(:staff)
-    
+
     @monthly_course = products(:yoga_monthly)
     @membership_annual = products(:annual_membership)
 

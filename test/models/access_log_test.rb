@@ -8,7 +8,7 @@ class AccessLogTest < ActiveSupport::TestCase
     @product.update!(duration_days: 30)
 
     grant_membership_to(@member)
-    
+
     @sale = Sale.create!(member: @member, product: @product, user: @staff, sold_on: Date.today)
     @subscription = Subscription.create!(member: @member, product: @product, sale: @sale)
   end

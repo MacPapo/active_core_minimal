@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  include SoftDeletable, Personable
+  include SoftDeletable, Personable, UserPreferences
 
   has_secure_password
   has_many :sessions, dependent: :destroy
