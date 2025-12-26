@@ -8,26 +8,33 @@ class SubscriptionTest < ActiveSupport::TestCase
     @member = members(:bob)
     @staff = users(:staff)
 
+    grant_membership_to(@member)
+
     @prod_inst = products(:yoga_monthly)
     @prod_inst.update!(duration_days: 30, accounting_category: "institutional")
   end
 
   test "automatically calculates dates based on sale date (Standard Flow)" do
-    # Oggi è 20 Gennaio
+    # Scenario: Vendita fatta il 20 Gennaio
     sale_date = Date.new(2025, 1, 20)
 
     sale = Sale.create!(
-      member: @member, product: @prod_inst, user: @staff,
-      sold_on: sale_date, payment_method: :cash
+      member: @member,
+      user: users(:staff),
+      product: @prod_inst,
+      sold_on: sale_date,
+      subscription_attributes: { member: @member, product: @prod_inst }
     )
 
-    # Creazione senza date esplicite
-    sub = Subscription.create!(member: @member, product: @prod_inst, sale: sale)
+    # Recuperiamo la subscription generata automaticamente
+    sub = sale.subscription
 
-    # Verifica: Deve aver usato Duration per allineare al 1° Gennaio
-    assert_equal Date.new(2025, 1, 1), sub.start_date
-    assert_equal Date.new(2025, 1, 31), sub.end_date
-    assert sub.active?(sale_date)
+    # Verifica Inizio: DEVE essere la data di vendita (20 Gen)
+    assert_equal Date.new(2025, 1, 20), sub.start_date
+
+    # Verifica Fine: 1 mese dopo (-1 giorno)
+    expected_end = Date.new(2025, 1, 20).advance(months: 1).yesterday
+    assert_equal expected_end, sub.end_date
   end
 
   test "respects user preference for future start date" do

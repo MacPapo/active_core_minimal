@@ -26,17 +26,18 @@ class Duration
     end
 
     def calculate_institutional
-      effective_start = preference_date.beginning_of_month
+      effective_start = preference_date
 
       if product.duration_days < 30
-        # Gestione giorni esatti per durate brevi
+        # Giorni esatti
         theoretical_end = effective_start.advance(days: product.duration_days - 1)
       else
-        # Gestione mensile standard
+        # Mesi mobili (es. 20 Gen -> 19 Feb)
         months_to_add = (product.duration_days / 30.0).round
         theoretical_end = effective_start.advance(months: months_to_add).yesterday
       end
 
+      # Il muro del 31 Agosto (SportYear) rimane valido ed è corretto!
       limit_date = SportYear.end_date_for(effective_start)
       final_end = [ theoretical_end, limit_date ].min
 

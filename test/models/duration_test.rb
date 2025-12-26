@@ -2,50 +2,48 @@ require "test_helper"
 
 class DurationTest < ActiveSupport::TestCase
   setup do
-    @prod_mensile = products(:yoga_monthly)
-    @prod_mensile.update!(duration_days: 30, accounting_category: "institutional")
-
-    @prod_trimestrale = products(:yoga_monthly).dup
-    @prod_trimestrale.duration_days = 90
-
-    @prod_tessera = products(:annual_membership)
-    @prod_tessera.update!(duration_days: 365, accounting_category: "associative")
+    @course = products(:yoga_monthly)       # Istituzionale (30gg)
+    @membership = products(:annual_membership) # Associativo (365gg)
   end
 
-  test "institutional aligns to 1st of month (Current Month Payment)" do
-    # Pago il 20 Gennaio
-    date = Date.new(2025, 1, 20)
-    result = Duration.new(@prod_mensile, date).calculate
+  test "institutional starts on preference date (NO MORE beginning of month)" do
+    # Scenario: Pago il 20 Gennaio
+    preference_date = Date.new(2025, 1, 20)
 
-    assert_equal Date.new(2025, 1, 1), result[:start_date]
-    assert_equal Date.new(2025, 1, 31), result[:end_date]
-  end
+    # Calcolo
+    result = Duration.new(@course, preference_date).calculate
 
-  test "institutional aligns to 1st of month (Future Month Selection)" do
-    # Scelgo di iniziare a Febbraio
-    date = Date.new(2025, 2, 1)
-    result = Duration.new(@prod_mensile, date).calculate
+    # Verifica: DEVE iniziare il 20, non il 1°
+    assert_equal Date.new(2025, 1, 20), result[:start_date]
 
-    assert_equal Date.new(2025, 2, 1), result[:start_date]
-    assert_equal Date.new(2025, 2, 28), result[:end_date]
+    # Verifica: Finisce tra un mese esatto (-1 giorno)
+    # Dal 20 Gen al 19 Feb (30 giorni inclusivi se usiamo logica mensile)
+    expected_end = Date.new(2025, 1, 20).advance(months: 1).yesterday
+    assert_equal expected_end, result[:end_date]
   end
 
   test "institutional caps at Sport Year End" do
-    # Compro un trimestrale (Lug-Ago-Set) il 15 Luglio
-    date = Date.new(2025, 7, 15)
-    result = Duration.new(@prod_trimestrale, date).calculate
+    # Scenario: Corso mensile comprato il 15 Agosto 2025
+    # L'anno sportivo finisce il 31 Agosto
+    preference_date = Date.new(2025, 8, 15)
 
-    assert_equal Date.new(2025, 7, 1), result[:start_date]
-    # Invece di finire il 30 Settembre, deve fermarsi al 31 Agosto
+    result = Duration.new(@course, preference_date).calculate
+
+    assert_equal Date.new(2025, 8, 15), result[:start_date]
+    # DEVE fermarsi al 31 Agosto, anche se il mese finirebbe il 14 Settembre
     assert_equal Date.new(2025, 8, 31), result[:end_date]
   end
 
-  test "associative starts on day of payment" do
-    # Pago il 15 Gennaio
-    date = Date.new(2025, 1, 15)
-    result = Duration.new(@prod_tessera, date).calculate
+  test "associative covers full sport year" do
+    # Scenario: Iscrizione il 15 Maggio 2025
+    preference_date = Date.new(2025, 5, 15)
 
-    assert_equal date, result[:start_date]
+    result = Duration.new(@membership, preference_date).calculate
+
+    assert_equal preference_date, result[:start_date]
+    # Scadenza fissa fine anno sportivo (31/08) o 365gg?
+    # Dipende dalla tua logica in Duration.rb per gli associativi.
+    # Se usi SportYear.end_date_for:
     assert_equal Date.new(2025, 8, 31), result[:end_date]
   end
 end

@@ -2,25 +2,25 @@ module SoftDeletable
   extend ActiveSupport::Concern
 
   included do
-    # Definiamo lo scope per vedere solo le cose "vive"
-    scope :kept, -> { where(discarded_at: nil) }
+    define_model_callbacks :discard, :undiscard
 
-    # Definiamo lo scope per vedere le cose "cestinate"
+    scope :kept, -> { where(discarded_at: nil) }
     scope :discarded, -> { where.not(discarded_at: nil) }
   end
 
-  # Controlla se è stato cancellato
   def discarded?
     discarded_at.present?
   end
 
-  # L'azione di cancellazione (soft)
   def discard!
-    touch(:discarded_at)
+    run_callbacks(:discard) do
+      touch(:discarded_at)
+    end
   end
 
-  # L'azione di ripristino
   def undiscard!
-    update!(discarded_at: nil)
+    run_callbacks(:undiscard) do
+      update!(discarded_at: nil)
+    end
   end
 end

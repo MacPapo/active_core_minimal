@@ -4,6 +4,8 @@ class ActivityLogTest < ActiveSupport::TestCase
   setup do
     @staff = users(:staff)
     @member = members(:alice)
+
+    grant_membership_to(@member)
   end
 
   test "valid activity log creation" do

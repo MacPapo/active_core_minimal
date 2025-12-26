@@ -3,7 +3,7 @@ class Subscription < ApplicationRecord
 
   belongs_to :member
   belongs_to :product
-  belongs_to :sale
+  belongs_to :sale, inverse_of: :subscription
 
   validates :member, :product, :sale, presence: true
 

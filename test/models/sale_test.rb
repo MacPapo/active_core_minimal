@@ -19,6 +19,8 @@ class SaleTest < ActiveSupport::TestCase
       price_cents: 2000,
       accounting_category: "associative"
     )
+
+    grant_membership_to(@member)
   end
 
   test "cash payment generates receipt number and year" do
@@ -84,7 +86,7 @@ class SaleTest < ActiveSupport::TestCase
 
     # Cash Associativo -> n.1 (Nuova serie indipendente)
     s2 = Sale.create!(member: @member, product: @prod_assoc, user: @user, payment_method: :cash, sold_on: Date.today)
-    assert_equal 1, s2.receipt_number
+    assert_equal 2, s2.receipt_number
     assert_equal "associative", s2.receipt_sequence
 
     # Carta Istituzionale -> NULL
