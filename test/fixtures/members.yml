@@ -1,0 +1,33 @@
+# Socio perfetto, attivo
+alice:
+  first_name: Alice
+  last_name: Allevi
+  fiscal_code: LLVLC80A01H501ZD
+  birth_date: 1980-01-01
+  email_address: alice@example.com
+  phone: "3331234567"
+  address: "Via Roma 1"
+  city: "Milano"
+  zip_code: "20100"
+  medical_certificate_expiry: <%= 1.year.from_now.to_date %>
+  discarded_at: null
+
+# Socio senza certificato
+bob:
+  first_name: Bob
+  last_name: Bianchi
+  fiscal_code: BNCBOB90B02H501X
+  birth_date: 1990-02-02
+  email_address: bob@example.com
+  city: "Roma"
+  medical_certificate_expiry: <%= 1.year.ago.to_date %> # Scaduto
+  discarded_at: null
+
+# Socio cancellato (per testare unicità condizionale)
+deleted:
+  first_name: Carlo
+  last_name: Cancellato
+  fiscal_code: CNCCRL80C03H501Y
+  birth_date: 1980-03-03
+  email_address: deleted@example.com
+  discarded_at: <%= 1.day.ago %>

@@ -1,0 +1,23 @@
+yoga:
+  name: "Yoga"
+  requires_medical_certificate: true
+  requires_membership: true
+  discarded_at: null
+
+sala_pesi:
+  name: "Sala Pesi"
+  requires_medical_certificate: true
+  requires_membership: true
+  discarded_at: null
+
+open_day:
+  name: "Prova Gratuita"
+  requires_medical_certificate: false
+  requires_membership: false
+  discarded_at: null
+
+pilates_old:
+  name: "Pilates"
+  requires_medical_certificate: true
+  requires_membership: true
+  discarded_at: <%= 1.day.ago %>

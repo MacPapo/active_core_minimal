@@ -1,0 +1,21 @@
+annual_membership:
+  name: "Quota Associativa 2025"
+  price_cents: 3000 # 30.00 €
+  duration_days: 365
+  accounting_category: associative
+  discarded_at: null
+
+yoga_monthly:
+  name: "Yoga Mensile"
+  price_cents: 4500 # 45.00 €
+  duration_days: 30
+  accounting_category: institutional
+  discarded_at: null
+
+# Prodotto vecchio, non più vendibile
+pilates_legacy:
+  name: "Pilates Vecchio Listino"
+  price_cents: 4000
+  duration_days: 30
+  accounting_category: institutional
+  discarded_at: <%= 1.year.ago %>
