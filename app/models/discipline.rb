@@ -7,4 +7,6 @@ class Discipline < ApplicationRecord
   normalizes :name, with: ->(n) { n.squish.titleize }
 
   validates :name, presence: true, uniqueness: { conditions: -> { kept } }
+
+  broadcasts_refreshes
 end

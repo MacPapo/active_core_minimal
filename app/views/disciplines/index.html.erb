@@ -1,4 +1,43 @@
-<div>
-  <h1 class="font-bold text-4xl">Disciplines#index</h1>
-  <p>Find me in app/views/disciplines/index.html.erb</p>
-</div>
+<%= turbo_stream_from "disciplines" %>
+
+<% content_for :page_title, Discipline.model_name.human(count: 2) %>
+
+<% content_for :page_counter, t("search.results", count: 10) %>
+
+<% content_for :page_actions do %>
+  <%= link_to [:new, :discipline],
+	      class: "btn btn-primary gap-2",
+	      data: { turbo_frame: "modal" } do %>
+    <%= icon("add", size: 20) %>
+    <span class="hidden sm:inline"><%= t("actions.new") %></span>
+  <% end %>
+<% end %>
+
+<!-- TODO filters -->
+
+<%= render "shared/header/page" %>
+<%= render "shared/filter/active", filter_keys: @keys %>
+
+<%= render "shared/table", pagy: @pagy do %>
+  <thead>
+    <tr>
+      <th class="pl-6 w-1/3">Nome</th>
+      <th class="text-center">Regole Accesso</th>
+      <th class="text-right pr-6">Prodotti Collegati</th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody id="disciplines">
+    <%= render partial: "discipline_row", collection: @disciplines, as: :discipline %>
+
+    <% if @disciplines.empty? %>
+      <td colspan="4">
+        <%= render "shared/empty_state", 
+        icon_name: "group_off", 
+        title: t("search.results.zero"), 
+        message: t("search.results.hint") %>
+      </td>
+    <% end %>
+  </tbody>
+<% end %>

@@ -1,0 +1,35 @@
+<%#
+Componente: Drawer laterale per filtri avanzati
+
+Slot:
+- :drawer_filters - Contenuto filtri (checkbox, radio, etc)
+%>
+
+<div class="drawer drawer-end">
+  <input id="filter-drawer" type="checkbox" class="drawer-toggle" />
+
+  <div class="drawer-content"></div>
+
+  <div class="drawer-side z-50">
+    <label for="filter-drawer" aria-label="close filters" class="drawer-overlay"></label>
+
+    <div class="bg-base-100 min-h-full w-96 flex flex-col">
+
+      <%# Header fisso %>
+      <div class="flex items-center justify-between p-6">
+	<div class="flex items-center gap-3">
+	  <%= icon("filter", size: 24) %>
+	  <h2 class="text-xl font-bold"><%= t("search.filter") %></h2>
+	</div>
+	<label for="filter-drawer" class="btn btn-ghost btn-sm btn-square">
+	  <%= icon("close", size: 20) %>
+	</label>
+      </div>
+
+      <%# Contenuto scrollabile %>
+      <div class="flex-1 overflow-y-auto p-6">
+	<%= yield  %>
+      </div>
+    </div>
+  </div>
+</div>

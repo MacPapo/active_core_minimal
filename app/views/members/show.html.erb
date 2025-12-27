@@ -1,4 +1,293 @@
-<div>
-  <h1 class="font-bold text-4xl">Members#show</h1>
-  <p>Find me in app/views/members/show.html.erb</p>
-</div>
+<%# app/views/members/show.html.erb %>
+
+<%= turbo_stream_from @member %>
+
+<%= render layout: "members/shell", locals: { member: @member } do %>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <%# --- COLONNA SINISTRA: DATI & STATO --- %>
+    <div class="space-y-6">
+      <%# CARD 1: CERTIFICATO MEDICO %>
+      <div class="card bg-base-100 shadow-sm border border-base-200">
+        <div class="card-body p-4">
+          <h3
+            class="
+              text-xs font-bold uppercase opacity-50 tracking-wider mb-3
+              flex items-center gap-2
+            "
+          >
+            <%= icon("medical_services", size: 14) %> Certificato Medico
+          </h3>
+
+          <% if @member.medical_certificate_valid? %>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-success font-bold">
+                <%= icon("check_circle", size: 20) %>
+                <span>Valido</span>
+              </div>
+
+              <div class="text-right">
+                <div class="text-xs opacity-60">Scade il</div>
+
+                <div class="font-mono text-sm">
+                  <%= format_date(@member.medical_certificate_expiry) %>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <div class="flex items-center gap-3 text-error mb-2">
+              <%= icon("error", size: 24) %>
+
+              <div class="leading-tight">
+                <div class="font-bold">Scaduto o Mancante</div>
+
+                <div class="text-xs opacity-70">
+                  L'accesso potrebbe essere negato.
+                </div>
+              </div>
+            </div>
+            <% if @member.medical_certificate_expiry %>
+              <div class="text-xs text-center opacity-60 mb-3">
+                Scaduto il:
+                <%= format_date(@member.medical_certificate_expiry) %>
+              </div>
+            <% end %>
+          <% end %>
+
+          <div class="divider my-1"></div>
+
+          <%= link_to edit_member_path(@member), class: "btn btn-xs btn-outline w-full", data: { turbo_frame: "modal" } do %>
+            Aggiorna Data
+          <% end %>
+        </div>
+      </div>
+
+      <%# CARD 2: CONTATTI %>
+      <div class="card bg-base-100 shadow-sm border border-base-200">
+        <div class="card-body p-4 text-sm">
+          <h3
+            class="
+              text-xs font-bold uppercase opacity-50 tracking-wider mb-3
+              flex items-center gap-2
+            "
+          >
+            <%= icon("contact_page", size: 14) %> Contatti
+          </h3>
+
+          <div class="space-y-3">
+            <div class="flex gap-3">
+              <div class="w-6 opacity-50"><%= icon("phone", size: 16) %></div>
+              <div class="font-mono"><%= format_phone(@member.phone) %></div>
+            </div>
+
+            <div class="flex gap-3">
+              <div class="w-6 opacity-50"><%= icon("email", size: 16) %></div>
+
+              <div class="truncate">
+                <%= format_email(@member.email_address) %>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <div class="w-6 opacity-50"><%= icon("home", size: 16) %></div>
+
+              <div class="leading-tight">
+                <%= display_value(@member.full_address) %>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <div class="w-6 opacity-50"><%= icon("cake", size: 16) %></div>
+
+              <div>
+                <%= format_date(@member.birth_date) %>
+
+                <span class="text-xs opacity-50 ml-1">
+                  (<%= time_ago_in_words(@member.birth_date) %>)
+                </span>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <div class="w-6 opacity-50">
+                <%= icon("fingerprint", size: 16) %>
+              </div>
+
+              <div class="font-mono"><%= @member.fiscal_code %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# --- COLONNA DESTRA: OPERATIVITÀ (2/3 width) --- %>
+    <div class="lg:col-span-2 space-y-6">
+      <%# SEZIONE 1: ABBONAMENTI ATTIVI %>
+      <div class="card bg-base-100 shadow-md border border-base-200">
+        <div class="card-body p-0">
+          <div
+            class="
+              p-4 border-b border-base-200 bg-base-200/30 rounded-t-box flex
+              justify-between items-center
+            "
+          >
+            <h3
+              class="
+                font-bold text-sm uppercase opacity-70 tracking-wider flex
+                items-center gap-2
+              "
+            >
+              <%= icon("card_membership", size: 18) %> Abbonamenti Attivi
+            </h3>
+
+            <%= link_to "Vedi Tutti", member_subscriptions_path(@member), class: "link link-hover text-xs opacity-60" %>
+          </div>
+
+          <div class="p-4 grid gap-3">
+            <%# Filtro Ruby safe %>
+            <% active_subs = @member.subscriptions.select { |s| s.end_date >= Date.yesterday }.sort_by(&:end_date) %>
+
+            <% if active_subs.any? %>
+              <% active_subs.each do |sub| %>
+                <% days_left = (sub.end_date - Date.current).to_i %>
+
+                <div
+                  class="
+                    flex flex-col sm:flex-row sm:items-center
+                    justify-between p-4 border border-base-300 rounded-xl
+                    bg-base-100 hover:border-primary/50 transition-colors
+                    gap-4
+                  "
+                >
+                  <%# Info Abbonamento %>
+                  <div class="flex items-start gap-3">
+                    <div class="p-2 bg-primary/10 text-primary rounded-lg">
+                      <%= icon("fitness_center", size: 24) %>
+                    </div>
+
+                    <div>
+                      <%# Usiamo il nome del prodotto collegato %>
+                      <h4 class="font-bold text-lg leading-none">
+                        <%= sub.product&.name %>
+                      </h4>
+
+                      <div class="text-sm opacity-60 mt-1 flex gap-2">
+                        <span>Dal <%= format_date(sub.start_date) %></span>
+
+                        <span>
+                          al <strong><%= format_date(sub.end_date) %></strong>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <%# Stato e Azione (Rinnovo) %>
+                  <div class="flex items-center gap-3 self-end sm:self-center">
+                    <% if days_left < 7 %>
+                      <div class="text-right mr-2">
+                        <div class="text-xs text-warning font-bold uppercase">
+                          In scadenza
+                        </div>
+
+                        <div class="text-sm font-mono">
+                          <%= days_left %> gg rimasti
+                        </div>
+                      </div>
+                    <% end %>
+
+                    <%= link_to new_sale_path(member_id: @member.id, renew_subscription_id: sub.id), class: "btn btn-primary btn-sm" do %>
+                      <%= icon("autorenew", size: 18) %> Rinnova
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            <% else %>
+              <%= render "shared/empty_state", 
+                  title: "Nessun abbonamento attivo", 
+                  message: "Il socio non ha accessi validi al momento.",
+                  icon_name: "remove_shopping_cart" %>
+              <div class="text-center pb-2">
+                <%= link_to new_sale_path(member_id: @member.id), class: "btn btn-primary btn-outline btn-sm" do %>
+                  Vendi Abbonamento
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# SEZIONE 2: ULTIMI MOVIMENTI (Sales corrette) %>
+      <div class="card bg-base-100 shadow-sm border border-base-200">
+        <div class="card-body p-0">
+          <div
+            class="
+              p-4 border-b border-base-200 bg-base-200/30 flex
+              justify-between items-center
+            "
+          >
+            <h3
+              class="
+                font-bold text-sm uppercase opacity-70 tracking-wider flex
+                items-center gap-2
+              "
+            >
+              <%= icon("receipt", size: 16) %> Acquisti Recenti
+            </h3>
+
+            <%= link_to "Vedi Tutti", member_sales_path(@member), class: "link link-hover text-xs opacity-60" %>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th class="pl-4">Data</th>
+                  <th>Prodotto</th>
+                  <th class="text-right pr-4">Importo</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <%# Correggiamo l'iterazione sulle vendite %>
+                <% @member.sales.order(created_at: :desc).limit(3).each do |sale| %>
+                  <tr
+                    class="hover:bg-base-200/50 cursor-pointer"
+                    onclick="window.location='<%= sale_path(sale) %>'"
+                  >
+                    <%# DATA %>
+                    <td class="pl-4 font-mono text-xs text-base-content/70">
+                      <%= format_date(sale.sold_on) %>
+                    </td>
+
+                    <%# PRODOTTO (Diretto da tabella sales) %>
+                    <td>
+                      <div class="font-medium">
+                        <%= sale.product_name_snapshot %>
+                      </div>
+
+                      <div class="text-[10px] opacity-50">
+                        <%= sale.receipt_code %>
+                      </div>
+                    </td>
+
+                    <%# IMPORTO (Diretto da tabella sales) %>
+                    <td class="text-right pr-4 font-bold font-mono">
+                      <%# Assumendo 'monetize :amount_cents' nel model, sale.amount esiste %>
+                      <%# Se non hai monetize, usa: format_money(sale.amount_cents / 100.0) %>
+                      <%= format_money(sale.try(:amount) || (sale.amount_cents / 100.0)) %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+
+            <% if @member.sales.empty? %>
+              <div class="p-4 text-center text-sm opacity-50 italic">
+                Nessun acquisto registrato
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,162 @@
+<%# app/views/members/_member.html.erb %>
+
+<%#
+  CACHE KEY: 
+  1. member: cambia se tocchi l'anagrafica
+  2. subscriptions.maximum: cambia se si rinnova/crea abbonamento
+  3. Date.current: invalida ogni notte per ricalcolare i giorni mancanti
+%>
+
+<% cache [member, member.subscriptions.maximum(:updated_at), Date.current] do %>
+  <tr id="<%= dom_id(member) %>_row">
+    <%# 1. AVATAR & ANAGRAFICA %>
+    <td class="py-3 pl-4 align-top w-[40%]">
+      <div class="flex items-start gap-3">
+        <%# Indicatore Stato (Pallino) %>
+        <% status_color = case member.status_label
+             when "success" then "badge-success"
+             when "warning" then "badge-warning"
+             else "badge-error"
+             end %>
+
+        <div class="avatar avatar-placeholder indicator">
+          <span class="indicator-item badge badge-xs <%= status_color %> border-white shadow-sm p-1"></span>
+
+          <div
+            class="
+              bg-neutral text-neutral-content rounded-full w-10 h-10 ring-1
+              ring-base-200
+            "
+          >
+            <%# Assumiamo che Personable definisca #initials, altrimenti usa first/last char %>
+            <span class="text-lg font-bold">
+              <%= member.try(:initials) || member.first_name[0] %>
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-col">
+          <%= link_to member_path(member), class: "font-bold text-base-content hover:text-primary transition-colors line-clamp-1", data: { turbo_frame: "_top" } do %>
+            <%# Virtual Column full_name in azione %>
+            <%= highlight member.full_name, params.dig(:query, :query) %>
+          <% end %>
+
+          <div class="text-xs opacity-60 flex flex-col gap-0.5 mt-0.5">
+            <% if member.phone.present? %>
+              <span class="font-mono tracking-tight flex items-center gap-1">
+                <%= icon("phone", size: 10, class: "opacity-70") %>
+                <%= format_phone(member.phone) %>
+              </span>
+            <% end %>
+
+            <%# Controllo età (Logic could be in Personable, but Date math is fast) %>
+            <% if member.birth_date > 18.years.ago %>
+              <span class="badge badge-xs badge-ghost mt-1 self-start">
+                Minore
+              </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </td>
+
+    <%# 2. ABBONAMENTI (Subscriptions) %>
+    <td class="align-middle w-[35%]">
+      <div class="flex flex-col gap-1.5 items-start">
+        <%# Preload fatto nel controller ideale: includes(subscriptions: :product) %>
+        <% active_subs = member.subscriptions.select { |s| s.end_date >= Date.yesterday }.sort_by(&:end_date).first(2) %>
+
+        <% if active_subs.any? %>
+          <% active_subs.each do |sub| %>
+            <% days_left = (sub.end_date - Date.current).to_i 
+               is_expiring = days_left.between?(0, 7)
+               
+               style_class = if is_expiring
+                 "bg-warning/10 text-warning-content border-warning/20"
+               else
+                 "bg-base-100 border-base-300 text-base-content/80"
+               end %>
+
+            <div class="flex items-center gap-2 border rounded-full pl-2 pr-2 py-0.5 text-xs shadow-sm max-w-full <%= style_class %>">
+              <span
+                class="font-medium truncate max-w-[120px]"
+                title="<%= sub.product&.name %>"
+              >
+                <%= sub.product&.name %>
+              </span>
+
+              <div class="w-px h-3 bg-current opacity-20"></div>
+
+              <% if is_expiring %>
+                <span
+                  class="
+                    font-bold text-[10px] flex items-center gap-1
+                    whitespace-nowrap
+                  "
+                >
+                  <%= icon("clock", size: 10) %> -<%= days_left %>gg
+                </span>
+              <% else %>
+                <span class="opacity-60 text-[10px] whitespace-nowrap">
+                  <%= l(sub.end_date, format: :short) %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <% if member.subscriptions.any? %>
+            <span class="badge badge-ghost badge-outline badge-xs opacity-50">
+              Scaduto
+            </span>
+          <% else %>
+            <span class="text-xs opacity-40 italic">—</span>
+          <% end %>
+        <% end %>
+      </div>
+    </td>
+
+    <%# 3. CERTIFICATO MEDICO %>
+    <td class="align-middle w-[20%]">
+      <% expiry = member.medical_certificate_expiry %>
+
+      <% if expiry %>
+        <% if member.medical_certificate_valid? %>
+          <%# Valido %>
+          <div class="flex items-center gap-1.5 text-xs font-medium text-success">
+            <%= icon("success", size: 14) %>
+
+            <span class="opacity-80">
+              <%= format_date(expiry, format: :default) %>
+            </span>
+          </div>
+        <% else %>
+          <%# Scaduto %>
+          <div
+            class="
+              flex items-center gap-1.5 text-xs font-bold text-error tooltip
+              tooltip-left
+            "
+            data-tip="Scaduto il <%= format_date(expiry) %>"
+          >
+            <%= icon("warning", size: 14) %>
+            <span>Scaduto</span>
+          </div>
+        <% end %>
+      <% else %>
+        <%# Assente %>
+        <span class="badge badge-ghost badge-outline badge-xs opacity-40">
+          Manca
+        </span>
+      <% end %>
+    </td>
+
+    <%# 4. AZIONI %>
+    <td class="text-right w-[5%] pr-4 align-middle">
+      <%= link_to member_path(member), 
+        class: "btn btn-square btn-xs btn-ghost text-base-content/60", 
+          title: "Vedi dettagli" do %>
+        <%= icon("view", size: 16) %>
+      <% end %>
+    </td>
+  </tr>
+<% end %>

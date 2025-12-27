@@ -1,0 +1,180 @@
+<%# app/views/members/_form.html.erb %>
+<%= form_with(model: member, class: "space-y-6") do |f| %>
+  <%= render "shared/form_errors", model: member %>
+
+  <%# --- SEZIONE 1: DATI ANAGRAFICI --- %>
+  <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box shadow-sm">
+    <legend
+      class="
+        fieldset-legend px-2 bg-base-100 font-bold uppercase text-xs
+        tracking-wider opacity-70
+      "
+    >
+      <%= icon("badge", size: 14) %>
+      <%= t("members.form.sections.personal", default: "Dati Anagrafici") %>
+    </legend>
+
+    <%# RIGA 1: Nome e Cognome %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+      <div class="form-control w-full">
+        <%= f.label :first_name, class: "label" do %>
+          <span class="label-text">
+            <%= Member.human_attribute_name(:first_name) %>
+          </span>
+        <% end %>
+
+        <%= f.text_field :first_name, required: true, class: "input input-bordered w-full", placeholder: "Mario" %>
+      </div>
+
+      <div class="form-control w-full">
+        <%= f.label :last_name, class: "label" do %>
+          <span class="label-text">
+            <%= Member.human_attribute_name(:last_name) %>
+          </span>
+        <% end %>
+
+        <%= f.text_field :last_name, required: true, class: "input input-bordered w-full", placeholder: "Rossi" %>
+      </div>
+    </div>
+
+    <%# RIGA 2: Codice Fiscale e Data Nascita %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-2">
+      <div class="form-control w-full">
+        <%= f.label :fiscal_code, class: "label" do %>
+          <span class="label-text">
+            <%= Member.human_attribute_name(:fiscal_code) %>
+          </span>
+        <% end %>
+
+        <%= f.text_field :fiscal_code, required: true, class: "input input-bordered w-full uppercase font-mono tracking-wide", placeholder: "RSSMRA..." %>
+      </div>
+
+      <div class="form-control w-full">
+        <%= f.label :birth_date, class: "label" do %>
+          <span class="label-text">
+            <%= Member.human_attribute_name(:birth_date) %>
+          </span>
+        <% end %>
+
+        <%= f.date_field :birth_date, required: true, class: "input input-bordered w-full" %>
+      </div>
+    </div>
+  </fieldset>
+
+  <%# --- SEZIONE 2: RESIDENZA (Novità Schema) --- %>
+  <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box shadow-sm">
+    <legend
+      class="
+        fieldset-legend px-2 bg-base-100 font-bold uppercase text-xs
+        tracking-wider opacity-70
+      "
+    >
+      <%= icon("home", size: 14) %>
+      <%= t("members.form.sections.address", default: "Residenza") %>
+    </legend>
+
+    <%# Indirizzo Completo %>
+    <div class="form-control w-full">
+      <%= f.label :address, class: "label" do %>
+        <span class="label-text">
+          <%= Member.human_attribute_name(:address) %>
+        </span>
+      <% end %>
+
+      <%= f.text_field :address, class: "input input-bordered w-full", placeholder: "Via Roma, 10" %>
+    </div>
+
+    <%# Città e CAP %>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mt-2">
+      <div class="form-control w-full md:col-span-2">
+        <%= f.label :city, class: "label" do %>
+          <span class="label-text">
+            <%= Member.human_attribute_name(:city) %>
+          </span>
+        <% end %>
+
+        <%= f.text_field :city, class: "input input-bordered w-full", placeholder: "Milano" %>
+      </div>
+
+      <div class="form-control w-full">
+        <%= f.label :zip_code, class: "label" do %>
+          <span class="label-text">
+            <%= Member.human_attribute_name(:zip_code) %>
+          </span>
+        <% end %>
+
+        <%= f.text_field :zip_code, class: "input input-bordered w-full font-mono", placeholder: "20100" %>
+      </div>
+    </div>
+  </fieldset>
+
+  <%# --- SEZIONE 3: CONTATTI E INFO MEDICHE --- %>
+  <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box shadow-sm">
+    <legend
+      class="
+        fieldset-legend px-2 bg-base-100 font-bold uppercase text-xs
+        tracking-wider opacity-70
+      "
+    >
+      <%= icon("contact_mail", size: 14) %>
+      <%= t("members.form.sections.details", default: "Contatti & Salute") %>
+    </legend>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+      <div class="form-control w-full">
+        <%= f.label :email_address, class: "label" do %>
+          <span class="label-text">
+            <%= Member.human_attribute_name(:email_address) %>
+          </span>
+        <% end %>
+
+        <%# Nota: campo cambiato da :email a :email_address come da schema %>
+        <%= f.email_field :email_address, class: "input input-bordered w-full", placeholder: "mario@esempio.com" %>
+      </div>
+
+      <div class="form-control w-full">
+        <%= f.label :phone, class: "label" do %>
+          <span class="label-text">
+            <%= Member.human_attribute_name(:phone) %>
+          </span>
+        <% end %>
+
+        <%= f.telephone_field :phone, class: "input input-bordered w-full", placeholder: "333 1234567" %>
+      </div>
+    </div>
+
+    <div class="divider my-2"></div>
+
+    <%# Certificato Medico (Nuovo campo diretto) %>
+    <div class="form-control w-full max-w-xs">
+      <%= f.label :medical_certificate_expiry, class: "label cursor-pointer justify-start gap-2" do %>
+        <%= icon("medical_services", size: 18, class: "text-error") %>
+
+        <span class="label-text font-bold text-base-content/80">
+          <%= Member.human_attribute_name(:medical_certificate_expiry) %>
+        </span>
+      <% end %>
+
+      <%= f.date_field :medical_certificate_expiry, class: "input input-bordered w-full" %>
+
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">
+          Lasciare vuoto se non presente.
+        </span>
+      </label>
+    </div>
+  </fieldset>
+
+  <%# --- AZIONI --- %>
+  <div class="modal-action mt-8 flex items-center justify-end gap-2">
+    <%# Se siamo in un modal, data-action per chiudere, altrimenti link normale %>
+    <%= link_to t("actions.cancel"), members_path, class: "btn btn-ghost" %>
+
+    <%= button_tag type: "submit", 
+    class: "btn btn-primary", 
+      data: { turbo_submits_with: '<span class="loading loading-dots loading-sm"></span> Salvataggio...' } do %>
+      <%= icon("save", size: 18) %>
+      <%= t("actions.save") %>
+    <% end %>
+  </div>
+<% end %>

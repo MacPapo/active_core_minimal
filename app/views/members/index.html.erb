@@ -1,4 +1,45 @@
-<div>
-  <h1 class="font-bold text-4xl">Members#index</h1>
-  <p>Find me in app/views/members/index.html.erb</p>
-</div>
+<%= turbo_stream_from "members" %>
+
+<% content_for :page_title, Member.model_name.human(count: 2) %>
+
+<% content_for :page_counter, t("search.results", count: 10) %>
+
+<% content_for :page_actions do %>
+  <%= link_to [:new, :member],
+	      class: "btn btn-primary gap-2",
+	      data: { turbo_frame: "modal" } do %>
+    <%= icon("add", size: 20) %>
+    <span class="hidden sm:inline"><%= t("actions.new") %></span>
+  <% end %>
+<% end %>
+
+<!-- TODO filters -->
+
+<%= render "shared/header/page" %>
+<%= render "shared/filter/active", filter_keys: @keys %>
+
+<%= render "shared/table", pagy: @pagy do %>
+  <thead>
+    <tr>
+      <th><%= Member.model_name.human %></th>
+      <th><%= Subscription.model_name.human %></th>
+      <th><%= Member.human_attribute_name(:medical_certificate_expiry) %></th>
+      <th class="w-1"></th>
+    </tr>
+  </thead>
+
+  <tbody id="members">
+    <%= render partial: "member_row", collection: @members, as: :member %>
+
+    <% if @members.empty? %>
+      <tr>
+        <td colspan="4">
+          <%= render "shared/empty_state", 
+          icon_name: "group_off", 
+          title: t("search.results.zero"), 
+          message: t("search.results.hint") %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+<% end %>

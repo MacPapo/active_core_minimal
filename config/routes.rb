@@ -29,11 +29,7 @@ Rails.application.routes.draw do
   # ============================================================================
   # 4. AMMINISTRAZIONE & VENDITE (Accounting)
   # ============================================================================
-  resources :sales, only: [ :index, :new, :create, :show, :destroy ] do
-    member do
-      get :receipt
-    end
-  end
+  resources :sales, only: [ :index, :new, :create, :show, :destroy ]
 
   resources :subscriptions, only: [ :index, :edit, :update ]
   resources :receipt_counters

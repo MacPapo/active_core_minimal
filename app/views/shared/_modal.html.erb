@@ -1,0 +1,30 @@
+<%= turbo_frame_tag "modal" do %>
+  <div data-controller="modal" class="w-full h-full">
+    <dialog class="modal modal-bottom sm:modal-middle modal-open">
+      <div class="modal-box relative">
+        <button
+          type="button"
+          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          data-action="click->modal#close"
+        >
+          <%= icon("close", size: 20) %>
+        </button>
+
+        <%# HEADER DEL MODALE %>
+        <h3 class="font-bold text-lg mb-6 pr-8"><%= title %></h3>
+
+        <%# CONTENUTO %>
+        <%= yield %>
+      </div>
+
+      <%# BACKDROP (Clicca fuori per chiudere) %>
+      <button
+        type="button"
+        class="modal-backdrop w-full h-full fixed inset-0 -z-10 cursor-default"
+        data-action="click->modal#close"
+      >
+        close
+      </button>
+    </dialog>
+  </div>
+<% end %>

@@ -1,0 +1,61 @@
+<%= form_with(model: discipline, class: "space-y-6") do |f| %>
+  <%= render "shared/form_errors", model: discipline %>
+
+  <div class="card bg-base-100 shadow-xl border border-base-200">
+    <div class="card-body">
+      <%# NOME %>
+      <div class="form-control w-full">
+        <%= f.label :name, "Nome Disciplina", class: "label font-bold" %>
+        <%= f.text_field :name, class: "input input-bordered w-full text-lg", placeholder: "Es. Sala Pesi, Yoga, Pilates..." %>
+      </div>
+
+      <div class="divider">Regole di Accesso</div>
+
+      <%# TOGGLE CERTIFICATO %>
+      <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-4 p-0">
+          <%= f.check_box :requires_medical_certificate, class: "toggle toggle-error" %>
+
+          <div>
+            <span class="label-text font-bold block">
+              Richiede Certificato Medico?
+            </span>
+
+            <span class="label-text-alt text-base-content/60">
+              Se attivo, il sistema bloccherà l'accesso se il certificato è
+              scaduto.
+            </span>
+          </div>
+        </label>
+      </div>
+
+      <div class="h-4"></div>
+
+      <%# TOGGLE MEMBERSHIP %>
+      <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-4 p-0">
+          <%= f.check_box :requires_membership, class: "toggle toggle-info" %>
+
+          <div>
+            <span class="label-text font-bold block">
+              Richiede Iscrizione/Tesseramento?
+            </span>
+
+            <span class="label-text-alt text-base-content/60">
+              Se attivo, verificherà che l'utente abbia pagato la quota
+              associativa annuale.
+            </span>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-end gap-2">
+    <%= link_to "Annulla", disciplines_path, class: "btn btn-ghost" %>
+
+    <%= f.button class: "btn btn-primary" do %>
+      <%= icon("save", size: 20) %> Salva Disciplina
+    <% end %>
+  </div>
+<% end %>

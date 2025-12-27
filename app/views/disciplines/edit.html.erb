@@ -1,4 +1,3 @@
-<div>
-  <h1 class="font-bold text-4xl">Disciplines#edit</h1>
-  <p>Find me in app/views/disciplines/edit.html.erb</p>
-</div>
+<%= render layout: "shared/modal", locals: { title: t(".title", name: @discipline.name) } do %>
+  <%= render "form", discipline: @discipline %>
+<% end %>

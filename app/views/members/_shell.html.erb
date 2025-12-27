@@ -1,0 +1,132 @@
+<%# app/views/members/_shell.html.erb %>
+<%# RICEVE: member (obbligatorio) %>
+
+<%# --- 1. INIEZIONE SIDEBAR (Navigazione Contestuale) --- %>
+<% content_for :member_actions do %>
+  <ul>
+    <li>
+      <h2
+        class="
+          menu-title px-4 py-2 opacity-50 text-xs font-bold uppercase
+          tracking-wider
+        "
+      >
+        <%= member.full_name %>
+      </h2>
+
+      <ul>
+        <li>
+          <%= active_link_to member_path(member), active: :exclusive do %>
+            <%= icon("badge", size: 18) %>
+            <%= t("members.sidebar.details", default: "Panoramica") %>
+          <% end %>
+        </li>
+
+        <li>
+          <%# Nota: subscriptions è definito nelle routes come module: :members %>
+          <%= active_link_to member_subscriptions_path(member) do %>
+            <%= icon("card_membership", size: 18) %>
+            <%= t("members.sidebar.subscriptions", default: "Abbonamenti") %>
+          <% end %>
+        </li>
+
+        <li>
+          <%= active_link_to member_sales_path(member) do %>
+            <%= icon("receipt_long", size: 18) %>
+            <%= t("members.sidebar.sales", default: "Storico Acquisti") %>
+          <% end %>
+        </li>
+
+        <!-- TODO -->
+        <% if nil %>
+          <li>
+            <%= active_link_to member_access_logs_path(member) do %>
+              <%= icon("history", size: 18) %>
+              <%= t("members.sidebar.access_logs", default: "Ingressi") %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </li>
+  </ul>
+<% end %>
+
+<%# --- 2. HEADER DEL RECORD (Avatar e Titolo) --- %>
+
+<% content_for :record_avatar do %>
+  <div class="avatar avatar-placeholder">
+    <%# Colore dinamico in base allo stato %>
+    <% bg_class = case member.status_label 
+         when 'success' then 'bg-success text-success-content'
+         when 'warning' then 'bg-warning text-warning-content'
+         else 'bg-error text-error-content'
+       end %>
+
+    <div class="<%= bg_class %> w-16 sm:w-14 rounded-full ring ring-offset-2 ring-base-100 ring-offset-base-100">
+      <span class="text-xl font-bold"><%= member %></span>
+    </div>
+  </div>
+<% end %>
+
+<% content_for :record_title, member.full_name %>
+
+<% content_for :record_subtitle do %>
+  <div class="flex items-center gap-2 text-sm opacity-70">
+    <div class="badge badge-sm badge-ghost gap-1">
+      <%= icon("calendar_today", size: 12) %>
+      <%= t("members.joined", default: "Dal") %>
+      <%= format_date(member.created_at) %>
+    </div>
+
+    <% if member.discarded? %>
+      <span class="badge badge-error badge-sm">ARCHIVIATO</span>
+    <% end %>
+  </div>
+<% end %>
+
+<% content_for :record_actions do %>
+  <div class="flex items-center gap-2">
+    <%# BOTTONE PRIMARIO: NUOVA VENDITA %>
+    <%= link_to new_sale_path(member_id: member.id), class: "btn btn-primary btn-sm gap-2" do %>
+      <%= icon("shopping_cart", size: 16) %>
+      <span class="hidden sm:inline">Vendi / Rinnova</span>
+    <% end %>
+
+    <%# DROPDOWN AZIONI SECONDARIE %>
+    <div class="dropdown dropdown-end">
+      <div tabindex="0" role="button" class="btn btn-square btn-sm btn-ghost">
+        <%= icon("more", size: 20) %>
+      </div>
+
+      <ul
+        tabindex="0"
+        class="
+          dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2
+          shadow-lg border border-base-200
+        "
+      >
+        <li>
+          <%= link_to edit_member_path(member), data: { turbo_frame: "modal" } do %>
+            <%= icon("edit", size: 16) %> Modifica Anagrafica
+          <% end %>
+        </li>
+
+        <div class="divider my-1"></div>
+
+        <li>
+          <%= link_to member_path(member), 
+          class: "text-error hover:bg-error/10",
+		      data: { turbo_method: :delete, turbo_confirm: "Sei sicuro di voler archiviare questo socio?" } do %>
+            <%= icon("delete", size: 16) %> Archivia Socio
+          <% end %>
+        </li>
+      </ul>
+    </div>
+  </div>
+<% end %>
+
+<%# Renderizza l'header standard (che usa i content_for qui sopra) %>
+<%= render "shared/header/record" %>
+
+<%# --- 3. CONTENUTO DELLA VIEW --- %>
+<div class="mt-6"><%= yield %></div>
