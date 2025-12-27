@@ -1,0 +1,2 @@
+module Members::SubscriptionsHelper
+end

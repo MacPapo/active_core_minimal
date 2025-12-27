@@ -1,0 +1,20 @@
+<% if model&.errors&.any? %>
+  <div class="pb-4">
+    <div role="alert" class="alert alert-error shadow-md text-sm">
+      <%= icon("error") %>
+
+      <div>
+        <h3 class="font-bold">
+          <%= pluralize(model.errors.count, "errore") %> ha impedito il
+          salvataggio:
+        </h3>
+
+        <ul class="list-disc pl-5 mt-2">
+          <% model.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+<% end %>

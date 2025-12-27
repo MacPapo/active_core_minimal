@@ -1,18 +1,57 @@
 Rails.application.routes.draw do
+  # ============================================================================
+  # 1. AUTHENTICATION
+  # ============================================================================
   resource :session
   resources :passwords, param: :token
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  resources :feedbacks, only: %i[new create]
+  # ============================================================================
+  # 2. ANAGRAFICA (Registry)
+  # ============================================================================
+  resources :members do
+    resources :subscriptions, only: [ :index ], module: :members
+    resources :access_logs,   only: [ :index ], module: :members
+    resources :sales,         only: [ :index ], module: :members
+  end
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  resources :users
+  namespace :preferences do
+    resource :theme, only: [ :show, :update ]
+    resource :language, only: [ :update ]
+  end
+
+  # ============================================================================
+  # 3. CATALOGO (Catalog)
+  # ============================================================================
+  resources :disciplines
+  resources :products
+
+  # ============================================================================
+  # 4. AMMINISTRAZIONE & VENDITE (Accounting)
+  # ============================================================================
+  resources :sales, only: [ :index, :new, :create, :show, :destroy ] do
+    member do
+      get :receipt
+    end
+  end
+
+  resources :subscriptions, only: [ :index, :edit, :update ]
+  resources :receipt_counters
+
+  # ============================================================================
+  # 5. ACCESSI (Access Control)
+  # ============================================================================
+  resources :access_logs, only: [ :index, :new, :create ]
+
+  # ============================================================================
+  # 6. REPORTING & UTILITY
+  # ============================================================================
+  resources :reports, only: [ :index, :show ], param: :report_type
+  resources :feedbacks, only: [ :new, :create ]
+
+  # ============================================================================
+  # ROOT & SYSTEM
+  # ============================================================================
   get "up" => "rails/health#show", as: :rails_health_check
-
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
   root "dashboard#index"
 end
