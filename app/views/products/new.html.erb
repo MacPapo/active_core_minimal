@@ -1,4 +1,3 @@
-<div>
-  <h1 class="font-bold text-4xl">Products#new</h1>
-  <p>Find me in app/views/products/new.html.erb</p>
-</div>
+<%= render layout: "shared/modal", locals: { title: t(".title") } do %>
+  <%= render "form", product: @product %>
+<% end %>

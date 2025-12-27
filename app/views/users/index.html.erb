@@ -1,4 +1,117 @@
-<div>
-  <h1 class="font-bold text-4xl">Users#index</h1>
-  <p>Find me in app/views/users/index.html.erb</p>
+<div class="container mx-auto max-w-6xl p-6 space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold font-mono tracking-tight">
+        Utenti Sistema
+      </h1>
+      <p class="text-base-content/60 mt-1">
+        Gestisci lo staff e gli accessi alla piattaforma.
+      </p>
+    </div>
+
+    <%= link_to new_user_path, class: "btn btn-primary gap-2" do %>
+      <%= icon("person_add", size: 20) %>
+      Nuovo Utente
+    <% end %>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl border border-base-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th class="pl-6">Utente</th>
+            <th>Username</th>
+            <th class="text-center">Ruolo</th>
+            <th>Contatti</th>
+            <th class="text-right pr-6">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if @users.any? %>
+            <% @users.each do |user| %>
+              <tr class="group hover:bg-base-200/50 transition-colors">
+                <%# UTENTE (Avatar + Nome) %>
+                <td class="pl-6">
+                  <div class="flex items-center gap-3">
+                    <div class="avatar placeholder">
+                      <div class="bg-neutral text-neutral-content rounded-full w-10">
+                        <span class="font-bold"><%= user %></span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="font-bold"><%= user.full_name %></div>
+                      <div class="text-xs opacity-50">
+                        Creato il <%= l(user.created_at.to_date) %>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <%# USERNAME %>
+                <td class="font-mono text-sm opacity-80">
+                  @<%= user.username %>
+                </td>
+
+                <%# RUOLO %>
+                <td class="text-center">
+                  <% if user.admin? %>
+                    <div class="badge badge-primary badge-outline font-bold gap-1">
+                      <%= icon("shield", size: 12) %> Admin
+                    </div>
+                  <% else %>
+                    <div class="badge badge-ghost gap-1">
+                      <%= icon("badge", size: 12) %> Staff
+                    </div>
+                  <% end %>
+                </td>
+
+                <%# EMAIL %>
+                <td class="text-sm">
+                  <%= mail_to user.email_address, class: "link link-hover opacity-70 flex items-center gap-1" do %>
+                    <%= icon("mail", size: 14) %>
+                    <%= user.email_address %>
+                  <% end %>
+                </td>
+
+                <%# AZIONI %>
+                <td class="text-right pr-6 w-1">
+                  <div class="dropdown dropdown-end">
+                    <div
+                      tabindex="0"
+                      role="button"
+                      class="btn btn-ghost btn-sm btn-square"
+                    >
+                      <%= icon("more_vert", size: 18) %>
+                    </div>
+                    <ul
+                      tabindex="0"
+                      class="
+                        dropdown-content menu bg-base-100 rounded-box z-[1]
+                        w-52 p-2 shadow border border-base-200
+                      "
+                    >
+                      <li><%= link_to "VEdi", user_path(user) %></li>
+                      <li><%= link_to "Modifica", edit_user_path(user) %></li>
+                      <li>
+                        <%= link_to "Archivia", user_path(user), 
+                            class: "text-error", 
+                            data: { turbo_method: :delete, turbo_confirm: "Sei sicuro di voler revocare l'accesso a #{user.username}?" } %>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          <% else %>
+            <tr>
+              <td colspan="5" class="text-center py-10 opacity-50 italic">
+                Nessun utente trovato.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

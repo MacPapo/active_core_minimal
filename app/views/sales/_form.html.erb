@@ -1,0 +1,175 @@
+<%# app/views/sales/_form.html.erb %>
+
+<%# Layout: 2 Colonne su Desktop. SX: Form, DX: Riepilogo Socio %>
+
+<%= form_with(model: sale, class: "grid grid-cols-1 lg:grid-cols-3 gap-6") do |f| %>
+  <%# --- COLONNA SINISTRA: INPUT VENDITA (2/3 width) --- %>
+  <div class="lg:col-span-2 space-y-6">
+    <%= render "shared/form_errors", model: sale %>
+
+    <div class="card bg-base-100 shadow-xl border border-base-200">
+      <div class="card-body">
+        <h3
+          class="
+            card-title text-sm uppercase opacity-50 tracking-wider mb-4 flex
+            items-center gap-2
+          "
+        >
+          <%= icon("shopping_cart", size: 18) %> Dettagli Vendita
+        </h3>
+
+        <%# 1. SELEZIONE SOCIO (Hidden se già presente, Select se nuovo) %>
+        <% if sale.member %>
+          <%= f.hidden_field :member_id %>
+          <%# Visualizzazione Statica del Socio Selezionato %>
+          <div class="alert bg-base-200 border-none flex justify-between items-center">
+            <div class="flex items-center gap-3">
+              <div class="avatar placeholder">
+                <div class="bg-neutral text-neutral-content rounded-full w-10">
+                  <span><%= sale.member.initials %></span>
+                </div>
+              </div>
+              <div>
+                <div class="font-bold"><%= sale.member.full_name %></div>
+                <div class="text-xs opacity-60">
+                  <%= sale.member.fiscal_code %>
+                </div>
+              </div>
+            </div>
+            <%= link_to "Cambia", members_path(q: "selection"), class: "btn btn-xs btn-ghost" %>
+          </div>
+        <% else %>
+          <div class="form-control w-full">
+            <%= f.label :member_id, "Socio Acquirente", class: "label font-bold" %>
+            <%# Qui ci vorrebbe una Select2/TomSelect. Per ora fallback nativo %>
+            <%= f.collection_select :member_id, Member.kept.order(:last_name), :id, :full_name, { prompt: "Seleziona Socio..." }, { class: "select select-bordered w-full" } %>
+          </div>
+        <% end %>
+
+        <div class="divider"></div>
+
+        <%# 2. SELEZIONE PRODOTTO %>
+        <div class="form-control w-full">
+          <%= f.label :product_id, "Prodotto / Servizio", class: "label font-bold" %>
+          <%# Stimulus controller qui sarebbe ideale per aggiornare il prezzo al cambio select %>
+          <%= f.collection_select :product_id, Product.kept.order(:name), :id, :name, { prompt: "Seleziona Prodotto..." }, { class: "select select-bordered w-full text-lg font-medium" } %>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <%# 3. PREZZO (Editabile) %>
+          <div class="form-control w-full">
+            <%= f.label :amount, "Importo (€)", class: "label font-bold" %>
+            <%= f.number_field :amount, step: 0.01, class: "input input-bordered font-mono text-lg", placeholder: "0.00" %>
+          </div>
+
+          <%# 4. DATA VENDITA %>
+          <div class="form-control w-full">
+            <%= f.label :sold_on, "Data Transazione", class: "label font-bold" %>
+            <%= f.date_field :sold_on, class: "input input-bordered" %>
+          </div>
+        </div>
+
+        <%# 5. DATA INIZIO ABBONAMENTO (Campo Virtuale per SubscriptionIssuer) %>
+        <div
+          class="
+            form-control w-full mt-4 p-4 bg-base-200/50 rounded-lg border
+            border-base-200
+          "
+        >
+          <%= f.label :subscription_start_date, class: "label cursor-pointer justify-start gap-2 py-0 mb-2" do %>
+            <%= icon("calendar_month", size: 18) %>
+            <span class="font-bold">Inizio Validità Abbonamento</span>
+          <% end %>
+
+          <%= f.date_field :subscription_start_date, value: @suggested_start_date, class: "input input-sm input-bordered w-full max-w-xs" %>
+          <div class="label pb-0">
+            <span class="label-text-alt opacity-60">
+              Modifica se vuoi far partire l'abbonamento in una data diversa da
+              quella suggerita (es. continuità).
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# PAGAMENTO %>
+    <div class="card bg-base-100 shadow-xl border border-base-200">
+      <div class="card-body">
+        <h3 class="card-title text-sm uppercase opacity-50 tracking-wider mb-2">
+          Pagamento
+        </h3>
+
+        <div class="form-control w-full">
+          <%= f.label :payment_method, "Metodo di Pagamento", class: "label font-bold" %>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <% Sale.payment_methods.keys.each do |method| %>
+              <label
+                class="
+                  cursor-pointer border border-base-300 rounded-lg p-3
+                  hover:bg-base-200 hover:border-primary transition-all flex
+                  flex-col items-center gap-2 text-center
+                  has-[:checked]:bg-primary/10 has-[:checked]:border-primary
+                  has-[:checked]:text-primary
+                "
+              >
+                <%= f.radio_button :payment_method, method, class: "radio radio-primary radio-sm hidden" %>
+                <% icon_name = case method 
+                     when 'cash' then 'payments'
+                     when 'credit_card' then 'credit_card'
+                     when 'bank_transfer' then 'account_balance'
+                     else 'more_horiz' end %>
+                <%= icon(icon_name, size: 24) %>
+                <span class="text-xs font-bold uppercase"><%= method.humanize %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="form-control w-full mt-4">
+          <%= f.label :notes, "Note (Opzionale)", class: "label font-bold" %>
+          <%= f.text_area :notes, class: "textarea textarea-bordered h-20", placeholder: "Es. Pagamento parziale..." %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# --- COLONNA DESTRA: RIEPILOGO & AZIONI --- %>
+  <div class="space-y-6">
+    <%# CARD RIEPILOGO (Sticky) %>
+    <div class="card bg-base-100 shadow-xl border border-primary/20 sticky top-24">
+      <div class="card-body bg-primary/5">
+        <h3 class="font-bold text-lg text-primary flex items-center gap-2">
+          <%= icon("check_circle", size: 24) %> Conferma
+        </h3>
+
+        <ul class="steps steps-vertical text-sm opacity-80 my-4">
+          <li class="step step-primary">Socio Identificato</li>
+          <li class="step step-primary">Prodotto Selezionato</li>
+          <li class="step">Pagamento</li>
+        </ul>
+
+        <div class="divider my-0"></div>
+
+        <div class="py-4 text-center">
+          <div class="text-xs uppercase font-bold opacity-50">
+            Totale da Incassare
+          </div>
+
+          <%# Questo valore dovrebbe aggiornarsi via JS idealmente, per ora è statico %>
+          <div class="text-4xl font-bold font-mono text-base-content mt-1">
+            <span id="total-display">---</span>
+          </div>
+        </div>
+
+        <div class="card-actions flex-col gap-2 mt-4">
+          <%= button_tag type: "submit", class: "btn btn-primary w-full shadow-lg" do %>
+            <%= icon("receipt_long", size: 20) %>
+            Emetti Ricevuta
+          <% end %>
+
+          <%= link_to "Annulla", :back, class: "btn btn-ghost w-full" %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

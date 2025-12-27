@@ -1,4 +1,98 @@
-<div>
-  <h1 class="font-bold text-4xl">Users#show</h1>
-  <p>Find me in app/views/users/show.html.erb</p>
+<div class="container mx-auto max-w-4xl p-6 space-y-6">
+  <%= link_to users_path, class: "btn btn-ghost btn-sm gap-1 pl-0 opacity-60 hover:opacity-100" do %>
+    <%= icon("arrow_back", size: 16) %>
+    Torna alla lista
+  <% end %>
+
+  <%# HEADER CARD %>
+  <div class="card bg-base-100 shadow-xl border border-base-200">
+    <div class="card-body">
+      <div
+        class="
+          flex flex-col sm:flex-row justify-between items-start
+          sm:items-center gap-4
+        "
+      >
+        <div class="flex items-center gap-4">
+          <div class="avatar placeholder">
+            <div class="bg-neutral text-neutral-content rounded-full w-20 text-3xl">
+              <span><%= @user %></span>
+            </div>
+          </div>
+          <div>
+            <h2 class="card-title text-3xl font-bold">
+              <%= @user.full_name %>
+            </h2>
+            <div class="flex gap-2 mt-1">
+              <span class="badge <%= @user.admin? ? 'badge-primary' : 'badge-ghost' %>">
+                <%= @user.role.capitalize %>
+              </span>
+              <span class="font-mono text-sm opacity-60 self-center">@<%= @user.username %></span>
+            </div>
+          </div>
+        </div>
+
+        <%= link_to edit_user_path(@user), class: "btn btn-outline gap-2" do %>
+          <%= icon("edit", size: 18) %>
+          Modifica Profilo
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# STATISTICHE OPERATIVE %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <%# Statistica Vendite %>
+    <div class="stats shadow border border-base-200 bg-base-100">
+      <div class="stat">
+        <div class="stat-figure text-primary opacity-20">
+          <%= icon("point_of_sale", size: 40) %>
+        </div>
+
+        <div class="stat-title">Vendite Effettuate</div>
+
+        <div class="stat-value text-primary"><%= @sales_count %></div>
+
+        <div class="stat-desc">Transazioni registrate a sistema</div>
+      </div>
+    </div>
+
+    <%# Statistica Ingressi %>
+    <div class="stats shadow border border-base-200 bg-base-100">
+      <div class="stat">
+        <div class="stat-figure text-secondary opacity-20">
+          <%= icon("qr_code_scanner", size: 40) %>
+        </div>
+
+        <div class="stat-title">Check-in Eseguiti</div>
+
+        <div class="stat-value text-secondary"><%= @checkins_count %></div>
+
+        <div class="stat-desc">Ingressi convalidati manualmente</div>
+      </div>
+    </div>
+  </div>
+
+  <%# DETTAGLI TECNICI %>
+  <div class="card bg-base-100 shadow-sm border border-base-200">
+    <div class="card-body">
+      <h3 class="font-bold text-lg opacity-70 mb-4 flex items-center gap-2">
+        <%= icon("fingerprint", size: 20) %> Dettagli Account
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="label text-xs uppercase font-bold opacity-50 pb-0">Email Account</label>
+          <div class="font-mono text-lg"><%= @user.email_address %></div>
+        </div>
+
+        <div>
+          <label class="label text-xs uppercase font-bold opacity-50 pb-0">Data Creazione</label>
+          <div class="font-mono text-lg">
+            <%= l(@user.created_at, format: :long) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

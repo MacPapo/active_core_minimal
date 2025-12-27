@@ -1,127 +1,213 @@
-<div class="space-y-8">
-  <div class="md:flex md:items-center md:justify-between">
-    <div class="min-w-0 flex-1">
-      <h2
+<div class="container mx-auto max-w-7xl p-6 space-y-8">
+  <%# --- HEADER: BENVENUTO E RICERCA --- %>
+  <div
+    class="
+      flex flex-col md:flex-row gap-6 justify-between items-end
+      md:items-center
+    "
+  >
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight flex items-center gap-2">
+        Buongiorno,
+        <%= Current.session.user.first_name %>
+        <span class="animate-pulse">👋</span>
+      </h1>
+      <p class="text-base-content/60 mt-1">
+        Ecco cosa succede in palestra oggi.
+      </p>
+    </div>
+
+    <%# OMNI-SEARCH BAR %>
+    <div class="w-full md:w-1/3">
+      <%= form_with url: members_path, method: :get, class: "join w-full shadow-sm" do |f| %>
+        <div class="relative w-full">
+          <div
+            class="
+              absolute inset-y-0 left-0 flex items-center pl-3
+              pointer-events-none opacity-50
+            "
+          >
+            <%= icon("search", size: 20) %>
+          </div>
+          <%= f.text_field :query, 
+              class: "input input-bordered w-full pl-10 join-item focus:outline-offset-0", 
+              placeholder: "Cerca socio (Nome, Cognome...)",
+              autofocus: true %>
+        </div>
+        <%= button_tag type: "submit", class: "btn btn-primary join-item" do %>
+          Cerca
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# --- SEZIONE 1: CASSA GIORNALIERA (Stats Component) --- %>
+  <div
+    class="
+      stats stats-vertical lg:stats-horizontal shadow-xl bg-base-100 w-full
+      border border-base-200
+    "
+  >
+    <%# MATTINA %>
+    <div class="stat">
+      <div class="stat-figure text-primary/20">
+        <%= icon("sunny", size: 32) %>
+      </div>
+
+      <div class="stat-title font-bold opacity-60">Mattina (Cash)</div>
+
+      <%# CORREZIONE QUI: .morning_total invece di .morning %>
+      <div class="stat-value text-3xl">
+        <%= format_money(@daily_cash.morning_total) %>
+      </div>
+
+      <div class="stat-desc">Fino alle 14:00</div>
+    </div>
+
+    <%# POMERIGGIO %>
+    <div class="stat">
+      <div class="stat-figure text-secondary/20">
+        <%= icon("bedtime", size: 32) %>
+      </div>
+
+      <div class="stat-title font-bold opacity-60">Pomeriggio (Cash)</div>
+
+      <%# CORREZIONE QUI: .afternoon_total invece di .afternoon %>
+      <div class="stat-value text-3xl">
+        <%= format_money(@daily_cash.afternoon_total) %>
+      </div>
+
+      <div class="stat-desc">Dopo le 14:00</div>
+    </div>
+
+    <%# TOTALE %>
+    <div class="stat bg-primary text-primary-content">
+      <div class="stat-figure text-primary-content/30">
+        <%= icon("savings", size: 40) %>
+      </div>
+
+      <div
         class="
-          text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl
-          sm:tracking-tight
+          stat-title text-primary-content/70 font-bold uppercase
+          tracking-wider
         "
       >
-        Buongiorno, <%= Current.session.user.first_name %> 👋
-      </h2>
+        Totale Contanti
+      </div>
+
+      <%# .total rimane invariato %>
+      <div class="stat-value"><%= format_money(@daily_cash.total) %></div>
+
+      <div class="stat-desc text-primary-content/60">Incasso odierno</div>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-    <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-      <dt class="truncate text-sm font-medium text-gray-500">
-        Cassa Mattina (Contanti)
-      </dt>
+  <%# --- SEZIONE 2: GRIGLIA OPERATIVA --- %>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <%# COLONNA SINISTRA (2/3): LIVE FEED (Accessi) %>
+    <div class="lg:col-span-2 space-y-6">
+      <div class="card bg-base-100 shadow-sm border border-base-200">
+        <div class="card-body p-0">
+          <div class="p-4 border-b border-base-200 flex justify-between items-center">
+            <h3 class="font-bold text-lg flex items-center gap-2">
+              <%= icon("history", size: 20) %> Ultimi Ingressi
+            </h3>
+            <%= link_to "Vedi tutti", access_logs_path, class: "btn btn-xs btn-ghost" %>
+          </div>
 
-      <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
-        <%= number_to_currency @daily_cash.morning_total %>
-      </dd>
-    </div>
-
-    <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-      <dt class="truncate text-sm font-medium text-gray-500">
-        Cassa Pomeriggio (Contanti)
-      </dt>
-
-      <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900">
-        <%= number_to_currency @daily_cash.afternoon_total %>
-      </dd>
-    </div>
-
-    <div class="overflow-hidden rounded-lg bg-indigo-600 px-4 py-5 shadow sm:p-6">
-      <dt class="truncate text-sm font-medium text-indigo-100">
-        Totale Contanti Oggi
-      </dt>
-
-      <dd class="mt-1 text-3xl font-semibold tracking-tight text-white">
-        <%= number_to_currency @daily_cash.total %>
-      </dd>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-    <div class="lg:col-span-2">
-      <div class="overflow-hidden bg-white shadow sm:rounded-md">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
-            Ultimi Ingressi
-          </h3>
-        </div>
-
-        <ul role="list" class="divide-y divide-gray-200">
-          <% if @recent_accesses.any? %>
-            <% @recent_accesses.each do |access| %>
-              <li class="px-4 py-4 sm:px-6 hover:bg-gray-50">
-                <div class="flex items-center justify-between">
-                  <p class="truncate text-sm font-medium text-indigo-600">
-                    <%= access.member.full_name %>
-                  </p>
-
-                  <div class="ml-2 flex shrink-0">
-                    <p
-                      class="
-                        inline-flex rounded-full bg-green-100 px-2 text-xs
-                        font-semibold leading-5 text-green-800
-                      "
-                    >
-                      <%= access.entered_at.strftime("%H:%M") %>
-                    </p>
+          <ul class="divide-y divide-base-200">
+            <% if @recent_accesses.any? %>
+              <% @recent_accesses.each do |access| %>
+                <li
+                  class="
+                    p-4 hover:bg-base-200/50 transition-colors flex
+                    items-center justify-between
+                  "
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="avatar placeholder">
+                      <div class="bg-neutral text-neutral-content rounded-full w-10">
+                        <span class="font-bold"><%= access.member %></span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="font-bold text-primary">
+                        <%= link_to access.member.full_name, access.member %>
+                      </div>
+                      <div class="text-xs opacity-50">
+                        <%= access.subscription.product.name rescue "Ingresso" %>
+                      </div>
+                    </div>
                   </div>
-                </div>
+
+                  <div class="badge badge-ghost font-mono">
+                    <%= format_date(access.entered_at, format: :short) %>
+                  </div>
+                </li>
+              <% end %>
+            <% else %>
+              <li class="p-10 text-center flex flex-col items-center gap-2 opacity-50">
+                <%= icon("pause_circle", size: 32) %>
+                <span>Nessun ingresso registrato oggi.</span>
               </li>
             <% end %>
-          <% else %>
-            <li class="px-4 py-8 text-center text-gray-500 italic">
-              Nessun ingresso registrato oggi.
-            </li>
-          <% end %>
-        </ul>
+          </ul>
+        </div>
       </div>
     </div>
 
-    <div class="space-y-4">
-      <button
-        type="button"
-        class="
-          w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm
-          font-semibold text-white shadow-sm hover:bg-indigo-500
-          focus-visible:outline focus-visible:outline-2
-          focus-visible:outline-offset-2 focus-visible:outline-indigo-600
-        "
-      >
-        + Nuova Vendita
-      </button>
-
-      <button
-        type="button"
-        class="
-          w-full rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold
-          text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300
-          hover:bg-gray-50
-        "
-      >
-        Cerca Socio
-      </button>
-
-      <div class="rounded-md bg-yellow-50 p-4 border border-yellow-200">
-        <div class="flex">
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-yellow-800">Scadenze</h3>
-
-            <div class="mt-2 text-sm text-yellow-700">
-              <p>
-                Ci sono <strong><%= @expiring_memberships %></strong>
-                abbonamenti in scadenza questa settimana.
-              </p>
-            </div>
+    <%# COLONNA DESTRA (1/3): AZIONI & ALERT %>
+    <div class="space-y-6">
+      <%# CARD AZIONI RAPIDE %>
+      <div class="card bg-base-100 shadow-sm border border-base-200">
+        <div class="card-body">
+          <h3 class="card-title text-sm uppercase opacity-50 tracking-wider mb-2">
+            Azioni Rapide
+          </h3>
+          <div class="flex flex-col gap-3">
+            <%= link_to new_sale_path, class: "btn btn-primary w-full shadow-md gap-2" do %>
+              <%= icon("point_of_sale", size: 20) %>
+              Nuova Vendita
+            <% end %>
+            <%= link_to new_member_path, class: "btn btn-outline w-full gap-2" do %>
+              <%= icon("person_add", size: 20) %>
+              Nuovo Iscritto
+            <% end %>
           </div>
         </div>
       </div>
+
+      <%# CARD SCADENZE %>
+      <% if @expiring_count > 0 %>
+        <div class="alert alert-warning shadow-md items-start">
+          <%= icon("notification_important", size: 24, class: "mt-1") %>
+          <div>
+            <h3 class="font-bold">Scadenze in arrivo!</h3>
+
+            <div class="text-xs">
+              Ci sono
+              <strong class="text-lg"><%= @expiring_count %></strong>
+              abbonamenti in scadenza nei prossimi 7 giorni.
+            </div>
+
+            <%= link_to "Vedi Lista", subscriptions_path(filter: 'expiring'), class: "btn btn-sm btn-ghost mt-2" %>
+          </div>
+        </div>
+      <% else %>
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+          <div class="card-body p-4 text-center">
+            <div class="text-success flex justify-center mb-2">
+              <%= icon("check_circle", size: 32) %>
+            </div>
+
+            <div class="font-bold text-sm">Nessuna scadenza imminente</div>
+
+            <div class="text-xs opacity-60">
+              Tutto tranquillo per i prossimi 7 giorni.
+            </div>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>

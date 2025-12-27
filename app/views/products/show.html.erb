@@ -1,0 +1,130 @@
+<div class="container mx-auto max-w-4xl p-6 space-y-6">
+  <%= link_to products_path, class: "btn btn-ghost btn-sm gap-1 pl-0 opacity-60 hover:opacity-100" do %>
+    <%= icon("arrow_back", size: 16) %>
+    Torna al listino
+  <% end %>
+
+  <%# HEADER PRODOTTO %>
+  <div class="card bg-base-100 shadow-xl border border-base-200">
+    <div class="card-body">
+      <div
+        class="
+          flex flex-col md:flex-row justify-between items-start
+          md:items-center gap-4
+        "
+      >
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <h2 class="card-title text-3xl font-mono"><%= @product.name %></h2>
+            <% if @product.associative? %>
+              <div class="badge badge-info badge-outline">Istituzionale</div>
+            <% else %>
+              <div class="badge badge-warning badge-outline">Commerciale</div>
+            <% end %>
+          </div>
+          <span class="text-sm opacity-60">Dettaglio Prodotto</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="text-right">
+            <div class="text-3xl font-bold font-mono text-primary">
+              <%= format_money(@product.price) %>
+            </div>
+            <div class="text-xs opacity-60 font-mono">
+              Durata: <%= @product.duration_days %> giorni
+            </div>
+          </div>
+
+          <div class="divider divider-horizontal mx-0"></div>
+
+          <%= link_to edit_product_path(@product), class: "btn btn-square btn-ghost" do %>
+            <%= icon("edit", size: 20) %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# REGOLE DI ACCESSO (DISCIPLINE) %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="card bg-base-100 shadow-sm border border-base-200">
+      <div class="card-body">
+        <h3 class="font-bold text-lg opacity-70 mb-2 flex items-center gap-2">
+          <%= icon("category", size: 20) %> Discipline Abilitate
+        </h3>
+
+        <p class="text-sm opacity-60 mb-4">
+          Acquistando questo prodotto, il socio avrà accesso alle seguenti
+          aree/attività (se in regola con i certificati richiesti):
+        </p>
+
+        <% if @product.disciplines.any? %>
+          <div class="flex flex-col gap-2">
+            <% @product.disciplines.each do |discipline| %>
+              <div
+                class="
+                  flex items-center justify-between p-3 bg-base-200/50
+                  rounded-lg border border-base-200
+                "
+              >
+                <span class="font-bold"><%= discipline.name %></span>
+                <div class="flex gap-1">
+                  <% if discipline.requires_medical_certificate? %>
+                    <div
+                      class="badge badge-xs badge-error badge-outline"
+                      title="Richiede Cert. Medico"
+                    >
+                      Med
+                    </div>
+                  <% end %>
+                  <% if discipline.requires_membership? %>
+                    <div
+                      class="badge badge-xs badge-info badge-outline"
+                      title="Richiede Iscrizione"
+                    >
+                      Iscr
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="alert alert-warning text-sm">
+            <%= icon("warning", size: 16) %>
+            Attenzione: Questo prodotto non è collegato a nessuna disciplina.
+            Non permetterà nessun accesso ai tornelli.
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# INFO AMMINISTRATIVE %>
+    <div class="card bg-base-100 shadow-sm border border-base-200 h-fit">
+      <div class="card-body">
+        <h3 class="font-bold text-lg opacity-70 mb-2 flex items-center gap-2">
+          <%= icon("receipt", size: 20) %> Info Contabili
+        </h3>
+
+        <div class="overflow-x-auto">
+          <table class="table table-sm">
+            <tbody>
+              <tr>
+                <td class="opacity-70">Categoria</td>
+                <td class="font-mono text-right">
+                  <%= @product.accounting_category.titleize %>
+                </td>
+              </tr>
+              <tr>
+                <td class="opacity-70">Importo Netto</td>
+                <td class="font-mono text-right">
+                  <%= format_money(@product.price) %>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

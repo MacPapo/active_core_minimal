@@ -1,0 +1,73 @@
+<%= form_with(model: product, class: "space-y-6") do |f| %>
+  <%= render "shared/form_errors", model: product %>
+
+  <div class="card bg-base-100 shadow-xl border border-base-200">
+    <div class="card-body">
+      <%# NOME %>
+      <div class="form-control w-full">
+        <%= f.label :name, "Nome Prodotto", class: "label font-bold" %>
+        <%= f.text_field :name, class: "input input-bordered w-full text-lg", placeholder: "Es. Mensile Open, Carnet 10 Ingressi..." %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+        <%# PREZZO (Virtual Attribute gestito da Monetize) %>
+        <div class="form-control w-full">
+          <%= f.label :price, "Prezzo (€)", class: "label font-bold" %>
+          <%= f.number_field :price, step: 0.01, class: "input input-bordered font-mono", placeholder: "0.00" %>
+        </div>
+
+        <%# DURATA %>
+        <div class="form-control w-full">
+          <%= f.label :duration_days, "Durata (giorni)", class: "label font-bold" %>
+          <%= f.number_field :duration_days, class: "input input-bordered", placeholder: "30" %>
+          <label class="label"><span class="label-text-alt opacity-60">Es: 30 = 1 Mese, 365 = 1 Anno</span></label>
+        </div>
+
+        <%# CATEGORIA CONTABILE (Enum) %>
+        <div class="form-control w-full">
+          <%= f.label :accounting_category, "Categoria Fiscale", class: "label font-bold" %>
+          <%= f.select :accounting_category, 
+              Product.accounting_categories.keys.map { |k| [k.titleize, k] }, 
+              {}, 
+              class: "select select-bordered w-full" %>
+        </div>
+      </div>
+
+      <div class="divider">Discipline Incluse</div>
+
+      <p class="text-sm opacity-60 mb-4">
+        Seleziona a quali discipline da accesso questo prodotto.
+      </p>
+
+      <%# CHECKBOX DISCIPLINE %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <%= f.collection_check_boxes :discipline_ids, Discipline.kept.order(:name), :id, :name do |b| %>
+          <label
+            class="
+              cursor-pointer label border border-base-200 rounded-lg
+              hover:bg-base-200/50 hover:border-base-300 transition-all p-3
+              justify-start gap-3
+            "
+          >
+            <%= b.check_box class: "checkbox checkbox-primary checkbox-sm" %>
+            <span class="label-text font-medium"><%= b.text %></span>
+          </label>
+        <% end %>
+      </div>
+
+      <% if Discipline.kept.empty? %>
+        <div class="alert alert-warning text-xs">
+          Nessuna disciplina creata. <%= link_to "Creane una ora", new_discipline_path, class: "underline" %>.
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="flex justify-end gap-2">
+    <%= link_to "Annulla", products_path, class: "btn btn-ghost" %>
+    <%= f.button class: "btn btn-primary" do %>
+      <%= icon("save", size: 20) %>
+      Salva Prodotto
+    <% end %>
+  </div>
+<% end %>
