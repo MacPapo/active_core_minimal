@@ -1,5 +1,5 @@
 <tr>
-  <td class="font-mono text-sm"><%= l(sale.sold_on, format: :default) %></td>
+  <td class="font-mono text-sm"><%= format_date(sale.sold_on, format: :default) %></td>
 
   <td class="font-mono text-sm font-bold">
     <% if sale.receipt_number.present? %>

@@ -1,61 +1,65 @@
 <%= form_with(model: discipline, class: "space-y-6") do |f| %>
   <%= render "shared/form_errors", model: discipline %>
 
-  <div class="card bg-base-100 shadow-xl border border-base-200">
-    <div class="card-body">
-      <%# NOME %>
-      <div class="form-control w-full">
-        <%= f.label :name, "Nome Disciplina", class: "label font-bold" %>
-        <%= f.text_field :name, class: "input input-bordered w-full text-lg", placeholder: "Es. Sala Pesi, Yoga, Pilates..." %>
-      </div>
+  <%# --- SEZIONE 1: INFO GENERALI --- %>
+  <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box shadow-sm">
+    <legend class="fieldset-legend">
+      <%= icon("fitness_center", size: 14) %> Info Disciplina
+    </legend>
 
-      <div class="divider">Regole di Accesso</div>
+    <%# NOME %>
+    <div>
+      <%= f.label :name, "Nome Disciplina", class: "label" %>
 
-      <%# TOGGLE CERTIFICATO %>
-      <div class="form-control">
-        <label class="label cursor-pointer justify-start gap-4 p-0">
-          <%= f.check_box :requires_medical_certificate, class: "toggle toggle-error" %>
-
-          <div>
-            <span class="label-text font-bold block">
-              Richiede Certificato Medico?
-            </span>
-
-            <span class="label-text-alt text-base-content/60">
-              Se attivo, il sistema bloccherà l'accesso se il certificato è
-              scaduto.
-            </span>
-          </div>
-        </label>
-      </div>
-
-      <div class="h-4"></div>
-
-      <%# TOGGLE MEMBERSHIP %>
-      <div class="form-control">
-        <label class="label cursor-pointer justify-start gap-4 p-0">
-          <%= f.check_box :requires_membership, class: "toggle toggle-info" %>
-
-          <div>
-            <span class="label-text font-bold block">
-              Richiede Iscrizione/Tesseramento?
-            </span>
-
-            <span class="label-text-alt text-base-content/60">
-              Se attivo, verificherà che l'utente abbia pagato la quota
-              associativa annuale.
-            </span>
-          </div>
-        </label>
-      </div>
+      <%= f.text_field :name, 
+          required: true, 
+          class: "input w-full text-lg", 
+          placeholder: "Es. Sala Pesi, Yoga, Pilates..." %>
     </div>
-  </div>
+  </fieldset>
 
-  <div class="flex justify-end gap-2">
+  <%# --- SEZIONE 2: REGOLE DI ACCESSO --- %>
+  <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box shadow-sm">
+    <legend class="fieldset-legend">
+      <%= icon("verified_user", size: 14) %> Regole di Accesso
+    </legend>
+
+    <%# TOGGLE CERTIFICATO %>
+    <div
+      class="tooltip"
+      data-tip="Se attivo, il sistema bloccherà l'ingresso
+		ai tornelli e segnalerà l'anomalia se il certificato è scaduto o
+		mancante."
+    >
+      <label class="label overflow-x-auto">
+        <%= f.check_box :requires_medical_certificate, class: "toggle toggle-error" %>
+        Richiede Certificato Medico?
+      </label>
+    </div>
+
+    <div class="divider my-2 opacity-50"></div>
+
+    <%# TOGGLE MEMBERSHIP %>
+    <div
+      class="tooltip"
+      data-tip="Se attivo, verificherà che l'utente abbia
+		pagato la quota associativa (tesseramento) valida per l'anno corrente."
+    >
+      <label class="label">
+        <%= f.check_box :requires_membership, class: "toggle toggle-info" %>
+        Richiede Iscrizione Annuale?
+      </label>
+    </div>
+  </fieldset>
+
+  <%# --- AZIONI --- %>
+  <div class="modal-action mt-8 flex items-center justify-end gap-2">
     <%= link_to "Annulla", disciplines_path, class: "btn btn-ghost" %>
 
-    <%= f.button class: "btn btn-primary" do %>
-      <%= icon("save", size: 20) %> Salva Disciplina
+    <%= button_tag type: "submit", 
+    class: "btn btn-primary", 
+      data: { turbo_submits_with: '<span class="loading loading-dots loading-sm"></span> Salvataggio...' } do %>
+      <%= icon("save", size: 18) %> Salva Disciplina
     <% end %>
   </div>
 <% end %>

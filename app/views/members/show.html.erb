@@ -13,13 +13,13 @@
               flex items-center gap-2
             "
           >
-            <%= icon("medical_services", size: 14) %> Certificato Medico
+            <%= icon("med", size: 14) %> Certificato Medico
           </h3>
 
           <% if @member.medical_certificate_valid? %>
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 text-success font-bold">
-                <%= icon("check_circle", size: 20) %>
+                <%= icon("success", size: 20) %>
                 <span>Valido</span>
               </div>
 
@@ -78,7 +78,7 @@
             </div>
 
             <div class="flex gap-3">
-              <div class="w-6 opacity-50"><%= icon("email", size: 16) %></div>
+              <div class="w-6 opacity-50"><%= icon("mail", size: 16) %></div>
 
               <div class="truncate">
                 <%= format_email(@member.email_address) %>
@@ -192,8 +192,10 @@
                       </div>
                     <% end %>
 
-                    <%= link_to new_sale_path(member_id: @member.id, renew_subscription_id: sub.id), class: "btn btn-primary btn-sm" do %>
-                      <%= icon("autorenew", size: 18) %> Rinnova
+                    <%= link_to new_sale_path(member_id: @member.id, renew_subscription_id: sub.id),
+				class: "btn btn-primary btn-sm",
+				data: { turbo_frame: "modal" } do %>
+                      <%= icon("reset", size: 18) %> Rinnova
                     <% end %>
                   </div>
                 </div>

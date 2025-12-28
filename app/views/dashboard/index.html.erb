@@ -8,10 +8,10 @@
   >
     <div>
       <h1 class="text-3xl font-bold tracking-tight flex items-center gap-2">
-        Buongiorno,
-        <%= Current.session.user.first_name %>
+        Buongiorno, <%= Current.session.user.first_name %>
         <span class="animate-pulse">👋</span>
       </h1>
+
       <p class="text-base-content/60 mt-1">
         Ecco cosa succede in palestra oggi.
       </p>
@@ -29,11 +29,13 @@
           >
             <%= icon("search", size: 20) %>
           </div>
+
           <%= f.text_field :query, 
               class: "input input-bordered w-full pl-10 join-item focus:outline-offset-0", 
               placeholder: "Cerca socio (Nome, Cognome...)",
               autofocus: true %>
         </div>
+
         <%= button_tag type: "submit", class: "btn btn-primary join-item" do %>
           Cerca
         <% end %>
@@ -67,7 +69,7 @@
     <%# POMERIGGIO %>
     <div class="stat">
       <div class="stat-figure text-secondary/20">
-        <%= icon("bedtime", size: 32) %>
+        <%= icon("moon", size: 32) %>
       </div>
 
       <div class="stat-title font-bold opacity-60">Pomeriggio (Cash)</div>
@@ -112,6 +114,7 @@
             <h3 class="font-bold text-lg flex items-center gap-2">
               <%= icon("history", size: 20) %> Ultimi Ingressi
             </h3>
+
             <%= link_to "Vedi tutti", access_logs_path, class: "btn btn-xs btn-ghost" %>
           </div>
 
@@ -130,10 +133,12 @@
                         <span class="font-bold"><%= access.member %></span>
                       </div>
                     </div>
+
                     <div>
                       <div class="font-bold text-primary">
                         <%= link_to access.member.full_name, access.member %>
                       </div>
+
                       <div class="text-xs opacity-50">
                         <%= access.subscription.product.name rescue "Ingresso" %>
                       </div>
@@ -141,7 +146,7 @@
                   </div>
 
                   <div class="badge badge-ghost font-mono">
-                    <%= format_date(access.entered_at, format: :short) %>
+                    <%= format_time_ago(access.entered_at) %>
                   </div>
                 </li>
               <% end %>
@@ -164,14 +169,18 @@
           <h3 class="card-title text-sm uppercase opacity-50 tracking-wider mb-2">
             Azioni Rapide
           </h3>
+
           <div class="flex flex-col gap-3">
-            <%= link_to new_sale_path, class: "btn btn-primary w-full shadow-md gap-2" do %>
-              <%= icon("point_of_sale", size: 20) %>
-              Nuova Vendita
+            <%= link_to new_sale_path,
+			class: "btn btn-primary w-full shadow-md gap-2",
+			data: { turbo_frame: "modal" } do %>
+              <%= icon("sale", size: 20) %> Nuova Vendita
             <% end %>
-            <%= link_to new_member_path, class: "btn btn-outline w-full gap-2" do %>
-              <%= icon("person_add", size: 20) %>
-              Nuovo Iscritto
+
+            <%= link_to new_member_path,
+			class: "btn btn-outline w-full gap-2",
+			data: { turbo_frame: "modal" } do %>
+              <%= icon("person_add", size: 20) %> Nuovo Iscritto
             <% end %>
           </div>
         </div>
@@ -181,12 +190,12 @@
       <% if @expiring_count > 0 %>
         <div class="alert alert-warning shadow-md items-start">
           <%= icon("notification_important", size: 24, class: "mt-1") %>
+
           <div>
             <h3 class="font-bold">Scadenze in arrivo!</h3>
 
             <div class="text-xs">
-              Ci sono
-              <strong class="text-lg"><%= @expiring_count %></strong>
+              Ci sono <strong class="text-lg"><%= @expiring_count %></strong>
               abbonamenti in scadenza nei prossimi 7 giorni.
             </div>
 
@@ -197,7 +206,7 @@
         <div class="card bg-base-100 shadow-sm border border-base-200">
           <div class="card-body p-4 text-center">
             <div class="text-success flex justify-center mb-2">
-              <%= icon("check_circle", size: 32) %>
+              <%= icon("success", size: 32) %>
             </div>
 
             <div class="font-bold text-sm">Nessuna scadenza imminente</div>

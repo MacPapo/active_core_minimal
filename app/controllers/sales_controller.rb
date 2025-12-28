@@ -24,50 +24,53 @@ class SalesController < ApplicationController
     @sale.sold_on = Date.current
     @sale.user = current_user
 
-    # SCENARIO 1: Arrivo dal profilo di un membro (param ?member_id=123)
+    # 1. Inizializziamo l'oggetto Subscription vuoto dentro la Sale
+    # Questo è necessario perché nel form useremo 'fields_for :subscription'
+    @sale.build_subscription
+
     if params[:member_id]
       @member = Member.find(params[:member_id])
       @sale.member = @member
     end
 
-    # SCENARIO 2: Rinnovo Abbonamento (param ?renew_subscription_id=456)
-    # Questa è la Killer Feature: pre-compila prodotto e prezzo
+    # 2. Logica Rinnovo Intelligente
     if params[:renew_subscription_id] && @member
       old_sub = @member.subscriptions.find(params[:renew_subscription_id])
       @sale.product = old_sub.product
-      @sale.amount = old_sub.product.price # Prezzo attuale del prodotto
+      @sale.amount = old_sub.product.price # Monetizable gestisce questo
 
-      # Logica continuità: Se scade in futuro, il nuovo parte dopo la scadenza.
-      # Se è già scaduto, parte oggi.
-      # (Questo valore andrebbe passato a un campo hidden o usato nel SubscriptionIssuer)
-      @suggested_start_date = [ old_sub.end_date + 1.day, Date.current ].max
+      # Calcolo data suggerita
+      suggested_start = [ old_sub.end_date + 1.day, Date.current ].max
+
+      # ASSEGNAZIONE ALLA NESTED RELATION
+      # Invece di un attributo fake, scriviamo direttamente nell'oggetto figlio
+      @sale.subscription.start_date = suggested_start
     else
-      @suggested_start_date = Date.current
+      # Default: oggi
+      @sale.subscription.start_date = Date.current
     end
   end
 
   def create
     @sale = Sale.new(sale_params)
-    @sale.user = current_user # Forza l'utente corrente come cassiere
+    @sale.user = current_user
 
-    # Se non è stato selezionato manualmente un prezzo, usa quello del prodotto
+    # Fallback prezzo se vuoto (grazie a Monetizable)
     if @sale.product && (@sale.amount.nil? || @sale.amount.zero?)
       @sale.amount = @sale.product.price
     end
 
     if @sale.save
-      # Redirect alla show per stampare subito la ricevuta o tornare al membro
       redirect_to sale_path(@sale), notice: t(".created", default: "Vendita registrata con successo.")
     else
-      # Se fallisce, ricarica il membro per la view
       @member = @sale.member
+      @sale.build_subscription if @sale.subscription.nil?
       render :new, status: :unprocessable_entity
     end
   end
 
   def destroy
-    # Soft delete (annulla vendita)
-    if @sale.discard
+    if @sale.discard!
       redirect_to sales_path, notice: t(".discarded", default: "Vendita annullata/stornata.")
     else
       redirect_to sales_path, alert: t(".error", default: "Impossibile annullare la vendita.")
@@ -75,7 +78,6 @@ class SalesController < ApplicationController
   end
 
   private
-
     def set_sale
       @sale = Sale.find(params[:id])
     end
@@ -88,7 +90,7 @@ class SalesController < ApplicationController
         :payment_method,
         :sold_on,
         :notes,
-        :subscription_start_date
+        subscription_attributes: [ :start_date ]
       )
     end
 end

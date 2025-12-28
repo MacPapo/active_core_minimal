@@ -47,7 +47,7 @@ class UsersController < ApplicationController
       return
     end
 
-    if @user.discard
+    if @user.discard!
       redirect_to users_path, notice: t(".discarded", default: "Utente archiviato.")
     else
       redirect_to users_path, alert: t(".error", default: "Impossibile archiviare utente.")

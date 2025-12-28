@@ -1,4 +1,3 @@
-# app/models/concerns/monetizable.rb
 module Monetizable
   extend ActiveSupport::Concern
 

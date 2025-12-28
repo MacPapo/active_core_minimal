@@ -16,16 +16,19 @@ module FormatHelper
 
   def format_date(date, format: :default)
     return display_value(nil) if date.nil?
+
     l(date.to_date, format: format)
   end
 
   def format_datetime(datetime, format: :default)
     return display_value(nil) if datetime.nil?
+    
     l(datetime, format: format)
   end
 
   def format_time_ago(datetime)
     return display_value(nil) if datetime.nil?
+
     tag.span(title: l(datetime, format: :long)) do
       time_ago_in_words(datetime)
     end

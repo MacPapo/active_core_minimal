@@ -25,42 +25,32 @@ module SubscriptionIssuer
     end
 
     def require_active_membership_for_courses
-      # 1. Se il prodotto è NULL o è esso stesso una Quota Associativa, usciamo.
-      # (Non serve la tessera per comprare la tessera)
       return if product.nil? || product.associative?
 
-      # 2. Determiniamo la data in cui il corso dovrebbe iniziare
-      # Nota: Usiamo subscription.start_date se calcolata, altrimenti sold_on
       check_date = subscription&.start_date || sold_on || Date.current
-
-      # 3. Chiediamo al Member se in quella data sarà coperto
-      # Nota: member.membership_valid? l'hai già nel modello Member, usiamolo!
       unless member.membership_valid?(check_date)
         errors.add(:base, "Impossibile vendere un corso istituzionale: Il socio non ha una Quota Associativa attiva per la data #{check_date.strftime('%d/%m/%Y')}.")
       end
     end
 
     def apply_smart_renewal_policy
-      # 1. Se non c'è abbonamento o se l'utente ha già messo una data manuale, fermati.
       return unless subscription.present?
+
+      subscription.member  = member
+      subscription.product = product
+
       return if subscription.start_date.present?
 
-      # 2. Cerchiamo l'ultima sottoscrizione per QUESTO membro e QUESTO prodotto
-      # Nota: Escludiamo noi stessi (in caso di salvataggi strani)
       last_sub = Subscription.kept
                              .where(member: member, product: product)
                              .where.not(id: subscription.id)
                              .order(end_date: :desc)
                              .first
 
-      # Default: Se non c'è storia, si parte da oggi (o dalla data vendita)
       target_start_date = sold_on || Date.current
 
       if last_sub
         continuity_date = last_sub.end_date + 1.day
-
-        # Calcoliamo la distanza tra OGGI e la data di continuità ideale
-        # Esempio: continuità = 1 Nov, sold_on = 20 Nov -> gap = 19 giorni
         gap_days = ((sold_on || Date.current) - continuity_date).to_i
 
         if gap_days < 0
@@ -81,10 +71,6 @@ module SubscriptionIssuer
         end
       end
 
-      # 3. Applichiamo la data calcolata
       subscription.start_date = target_start_date
-
-      # Nota: Non serve calcolare end_date qui.
-      # Ci penserà il modello Subscription nel suo before_validation usando la duration del prodotto.
     end
 end
