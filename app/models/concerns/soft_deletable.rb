@@ -12,6 +12,10 @@ module SoftDeletable
     discarded_at.present?
   end
 
+  def kept?
+    !discarded?
+  end
+
   def discard!
     run_callbacks(:discard) do
       touch(:discarded_at)

@@ -1,4 +1,4 @@
-<tr>
+<tr id="<%= dom_id(product) %>_row">
   <%# NOME %>
   <td class="pl-6 font-bold text-lg">
     <%= link_to product.name, product, class: "hover:underline decoration-primary decoration-2 underline-offset-2" %>
@@ -18,17 +18,19 @@
   </td>
 
   <%# DURATA %>
-  <td class="text-center font-mono text-sm"><%= product.duration_days %> gg</td>
+  <td class="text-center font-mono text-sm">
+    <%= display_value(product.duration_days) %> gg
+  </td>
 
   <%# CATEGORIA CONTABILE %>
   <td class="text-center">
     <% if product.associative? %>
       <span class="badge badge-info badge-outline text-xs">
-        Istituzionale
+        Q. Associativa
       </span>
     <% else %>
       <span class="badge badge-warning badge-outline text-xs">
-        Commerciale
+        Q. Istituzionale
       </span>
     <% end %>
   </td>
@@ -39,27 +41,25 @@
   </td>
 
   <%# AZIONI %>
-  <td class="text-right w-1">
-    <div class="dropdown dropdown-end">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-square">
-        <%= icon("more_vert", size: 18) %>
-      </div>
+  <td class="text-right w-1 pr-4 align-middle">
+    <div class="join">
+      <%= link_to [:edit, product],
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { tip: "Modifica", turbo_frame: "modal" } do %>
+        <%= icon("edit", size: 16) %>
+      <% end %>
 
-      <ul
-        tabindex="0"
-        class="
-          dropdown-content menu bg-base-100 rounded-box z-[1]
-          w-52 p-2 shadow border border-base-200
-        "
-      >
-        <li><%= link_to "Modifica", edit_product_path(product) %></li>
-
-        <li>
-          <%= link_to "Archivia", product_path(product), 
-                  class: "text-error", 
-                    data: { turbo_method: :delete, turbo_confirm: "Sei sicuro?" } %>
-        </li>
-      </ul>
+      <% if current_user.admin? %>
+        <%= link_to [product],
+		    class: "join-item text-error btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		    data: {
+		      tip: "Archivia",
+		      turbo_method: :delete,
+		      turbo_confirm: "Sei sicuro di voler archiviare #{product.name}?"
+		    } do %>
+          <%= icon("delete", size: 16) %>
+        <% end %>
+      <% end %>
     </div>
   </td>
 </tr>

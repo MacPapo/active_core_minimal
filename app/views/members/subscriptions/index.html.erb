@@ -2,17 +2,18 @@
 
 <%= render layout: "members/shell", locals: { member: @member } do %>
   <div class="flex justify-between items-center">
-    <h1 class="text-3xl font-bold tracking-tight">Storico Abbonamenti</h1>
+    <h1 class="text-2xl font-bold">Storico Abbonamenti</h1>
   </div>
 
   <%= render "shared/table", pagy: @pagy do %>
     <thead>
-      <tr class="bg-base-200/50">
+      <tr>
         <th class="w-32">Stato</th>
         <th>Abbonamento</th>
         <th>Periodo di Validità</th>
         <th class="text-center">Giorni</th>
         <th>Riferimento Acquisto</th>
+        <th></th>
       </tr>
     </thead>
 

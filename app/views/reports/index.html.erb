@@ -55,11 +55,10 @@
 
         <td class="text-right w-1">
           <% unless report.empty? %>
-            <%# report_path("daily_cash", date: ...) è fondamentale %>
-            <%= link_to report_path("daily_cash", date: report.date), 
-            class: "btn btn-ghost btn-xs btn-square tooltip tooltip-left", 
-              title: "Vedi dettagli" do %>
-              <%= icon("visibility", size: 16) %>
+            <%= link_to report_path("daily_cash", date: report.date),
+			class: "btn btn-ghost btn-xs btn-square tooltip tooltip-left", 
+			data: { tip: "Dettaglio" } do %>
+              <%= icon("view", size: 16) %>
             <% end %>
           <% end %>
         </td>
@@ -86,6 +85,4 @@
       <td></td>
     </tr>
   </tfoot>
-      </table>
 <% end %>
-

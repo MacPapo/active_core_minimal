@@ -1,7 +1,7 @@
 <tr id="<%= dom_id(discipline) %>_row">
   <%# NOME %>
   <td class="pl-6 font-bold text-lg">
-    <%= link_to discipline.name, discipline, class: "hover:underline decoration-primary decoration-2 underline-offset-2" %>
+    <%= link_to discipline.name, discipline, class: "font-bold text-base-content hover:text-primary transition-colors truncate" %>
   </td>
 
   <%# REGOLE (Badge) %>
@@ -13,7 +13,7 @@
           class="badge badge-error badge-outline gap-1 text-xs font-bold"
           title="Richiede Certificato Medico"
         >
-          <%= icon("medical_services", size: 12) %> Cert. Medico
+          <%= icon("med", size: 12) %> Cert. Medico
         </div>
       <% else %>
         <div
@@ -40,27 +40,34 @@
 
   <%# CONTEGGIO PRODOTTI %>
   <td class="text-right pr-6 font-mono opacity-60">
-    <%= discipline.products.count %>
+    <%= display_value(discipline.products.count) %>
   </td>
 
   <%# AZIONI %>
-  <td class="text-right w-[5%] pr-4 align-middle">
+  <td class="text-right w-1 pr-4 align-middle">
     <div class="join">
       <%= link_to [discipline],
-		  class: "join-item btn btn-square btn-xs btn-ghost text-base-content/60" do %>
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { tip: "Dettaglio" } do %>
         <%= icon("view", size: 16) %>
       <% end %>
 
       <%= link_to [:edit, discipline],
-		  class: "join-item btn btn-square btn-xs btn-ghost text-base-content/60",
-		  data: { turbo_frame: "modal" } do %>
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { tip: "Modifica", turbo_frame: "modal" } do %>
         <%= icon("edit", size: 16) %>
       <% end %>
 
-      <%= link_to [discipline],
-		  class: "join-item btn btn-square btn-xs btn-ghost text-base-content/60",
-		  data: { turbo_method: :delete, turbo_confirm: t("global.confirm") } do %>
-        <%= icon("delete", size: 16) %>
+      <% if current_user.admin? %>
+        <%= link_to [discipline],
+		    class: "join-item text-error btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		    data: {
+		      tip: "Archivia",
+		      turbo_method: :delete,
+		      turbo_confirm: "Sei sicuro di voler archiviare #{discipline.name}?"
+		    } do %>
+          <%= icon("delete", size: 16) %>
+        <% end %>
       <% end %>
     </div>
   </td>

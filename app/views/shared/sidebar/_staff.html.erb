@@ -1,0 +1,28 @@
+<!-- SIZE param -->
+<ul
+  class="menu w-full px-2 py-4 gap-1 text-base-content"
+  data-controller="sidebar-nav"
+>
+  <li>
+    <%= active_link_to root_path, class: "group" do %>
+      <%= icon("dashboard", size: size) %>
+      <%= t("sidebar.items.dashboard", default: "Dashboard") %>
+    <% end %>
+  </li>
+
+  <li>
+    <%= active_link_to members_path, class: "group" do %>
+      <%= icon("member", size: size) %>
+      <%= t("sidebar.items.members", default: "Soci") %>
+    <% end %>
+
+    <%= yield :member_actions if content_for?(:member_actions) %>
+  </li>
+
+  <li>
+    <%= active_link_to disciplines_path, class: "group" do %>
+      <%= icon("spa", size: size) %>
+      <%= t("sidebar.items.disciplines", default: "Discipline") %>
+    <% end %>
+  </li>
+</ul>

@@ -1,5 +1,5 @@
 <tr>
-  <td class="font-mono text-sm"><%= format_date(sale.sold_on, format: :default) %></td>
+  <td class="font-mono text-sm"><%= format_date(sale.sold_on) %></td>
 
   <td class="font-mono text-sm font-bold">
     <% if sale.receipt_number.present? %>
@@ -46,5 +46,21 @@
     <%= format_money(sale.amount) %>
   </td>
 
-  <td class="text-right"></td>
+  <td class="text-right w-[10%] pr-4 align-middle">
+    <%= link_to [sale], class: "btn btn-square btn-xs btn-ghost", title: "Dettaglio" do %>
+      <%= icon("view", size: 16) %>
+    <% end %>
+
+    <% if sale.created_at > 24.hours.ago %>
+      <%= link_to sale_path(sale),
+		  class: "btn btn-square btn-xs btn-ghost text-error hover:bg-error/10",
+		  title: "Annulla Vendita",
+		  data: {
+		    turbo_method: :delete,
+		    turbo_confirm: "Sei sicuro di voler annullare questa VENDITA?\n\nVerra annullato anche l'eventuale abbonamento associato.\n\nL'operazione è irreversibile."
+		  } do %>
+        <%= icon("trash_2", size: 16) %>
+      <% end %>
+    <% end %>
+  </td>
 </tr>

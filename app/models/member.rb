@@ -1,5 +1,5 @@
 class Member < ApplicationRecord
-  include SoftDeletable, Personable, HasAddress
+  include SoftDeletable, Personable, HasAddress, Avatarable
 
   normalizes :fiscal_code, with: ->(c) { c.strip.upcase }
 
@@ -42,5 +42,21 @@ class Member < ApplicationRecord
     return "error" if discarded?
     return "warning" unless compliant?
     "success"
+  end
+
+  def relevant_subscriptions
+    source = subscriptions.loaded? ? subscriptions : subscriptions.includes(:product)
+    active_source = source.select { |sub| sub.kept? }
+
+    sorted = active_source.sort_by(&:end_date).reverse
+
+    latest_per_product = sorted.uniq(&:product_id)
+
+    cutoff_date = 60.days.ago.to_date
+    visible = latest_per_product.select do |sub|
+      sub.end_date >= cutoff_date
+    end
+
+    visible.sort_by { |sub| (sub.end_date - Date.current).to_i }
   end
 end

@@ -2,12 +2,12 @@
 
 <%= render layout: "members/shell", locals: { member: @member } do %>
   <div class="flex justify-between items-center">
-    <h1 class="text-3xl font-bold tracking-tight">Storico Acquisti</h1>
+    <h1 class="text-2xl font-bold">Storico Acquisti</h1>
 
-    <div class="stat-value text-primary text-2xl">
+    <div class="stat-value text-primary text-lg">
       <%= format_cents(@sales.sum(&:amount_cents)) %>
 
-      <span class="text-xs font-normal text-base-content/50 block text-right mt-1">
+      <span class="text-xs font-normal text-base-content/50">
         Totale speso
       </span>
     </div>

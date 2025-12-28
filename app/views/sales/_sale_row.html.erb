@@ -1,19 +1,17 @@
 <tr>
   <%# DATA %>
-  <td class="pl-6 font-mono text-sm opacity-80"><%= l(sale.sold_on) %></td>
+  <td class="pl-6 font-mono text-sm opacity-80">
+    <%= format_date(sale.sold_on, format: :long) %>
+  </td>
 
   <%# RICEVUTA %>
   <td class="font-mono font-bold text-xs">
-    <% if sale.receipt_code.present? %>
-      <%= sale.receipt_code %>
-    <% else %>
-      <span class="opacity-30">—</span>
-    <% end %>
+    <%= display_value(sale.receipt_code) %>
   </td>
 
   <%# SOCIO %>
   <td>
-    <%= link_to sale.member.full_name, member_path(sale.member), class: "font-bold hover:text-primary link-hover" %>
+    <%= link_to sale.member.full_name, member_path(sale.member), class: "font-bold text-base-content hover:text-primary transition-colors truncate" %>
   </td>
 
   <%# PRODOTTO %>
@@ -49,33 +47,25 @@
   </td>
 
   <%# AZIONI %>
-  <td class="text-right w-1">
-    <div class="dropdown dropdown-end">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-square">
-        <%= icon("more_vert", size: 18) %>
-      </div>
+  <td class="text-right w-1 pr-4 align-middle">
+    <div class="join">
+      <%= link_to [sale],
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { tip: "Dettaglio" } do %>
+        <%= icon("view", size: 16) %>
+      <% end %>
 
-      <ul
-        tabindex="0"
-        class="
-          dropdown-content menu bg-base-100 rounded-box z-[1]
-          w-52 p-2 shadow border border-base-200
-        "
-      >
-        <li>
-          <%= link_to sale_path(sale) do %>
-            <%= icon("receipt", size: 16) %> Dettagli / Stampa
-          <% end %>
-        </li>
-
-        <li>
-          <%= link_to sale_path(sale), 
-                        class: "text-error", 
-                          data: { turbo_method: :delete, turbo_confirm: "Sei sicuro di voler stornare questa vendita? L'abbonamento collegato verrà annullato." } do %>
-            <%= icon("delete", size: 16) %> Storna Vendita
-          <% end %>
-        </li>
-      </ul>
+      <% if current_user.admin? && sale.created_at > 24.hours.ago %>
+        <%= link_to [sale],
+		    class: "join-item text-error btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		    data: {
+		      tip: "Archivia",
+		      turbo_method: :delete,
+		      turbo_confirm: "Sei sicuro di volerla archiviare?"
+		    } do %>
+          <%= icon("delete", size: 16) %>
+        <% end %>
+      <% end %>
     </div>
   </td>
 </tr>

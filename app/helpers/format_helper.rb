@@ -22,7 +22,7 @@ module FormatHelper
 
   def format_datetime(datetime, format: :default)
     return display_value(nil) if datetime.nil?
-    
+
     l(datetime, format: format)
   end
 

@@ -1,9 +1,4 @@
-<div class="container mx-auto max-w-4xl p-6 space-y-6">
-  <%= link_to users_path, class: "btn btn-ghost btn-sm gap-1 pl-0 opacity-60 hover:opacity-100" do %>
-    <%= icon("arrow_back", size: 16) %>
-    Torna alla lista
-  <% end %>
-
+<%= render layout: "users/shell", locals: { user: @user } do %>
   <%# HEADER CARD %>
   <div class="card bg-base-100 shadow-xl border border-base-200">
     <div class="card-body">
@@ -19,22 +14,26 @@
               <span><%= @user %></span>
             </div>
           </div>
+
           <div>
             <h2 class="card-title text-3xl font-bold">
               <%= @user.full_name %>
             </h2>
+
             <div class="flex gap-2 mt-1">
               <span class="badge <%= @user.admin? ? 'badge-primary' : 'badge-ghost' %>">
                 <%= @user.role.capitalize %>
               </span>
-              <span class="font-mono text-sm opacity-60 self-center">@<%= @user.username %></span>
+
+              <span class="font-mono text-sm opacity-60 self-center">
+                @<%= @user.username %>
+              </span>
             </div>
           </div>
         </div>
 
         <%= link_to edit_user_path(@user), class: "btn btn-outline gap-2" do %>
-          <%= icon("edit", size: 18) %>
-          Modifica Profilo
+          <%= icon("edit", size: 18) %> Modifica Profilo
         <% end %>
       </div>
     </div>
@@ -82,12 +81,18 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="label text-xs uppercase font-bold opacity-50 pb-0">Email Account</label>
+          <label class="label text-xs uppercase font-bold opacity-50 pb-0">
+            Email Account
+          </label>
+
           <div class="font-mono text-lg"><%= @user.email_address %></div>
         </div>
 
         <div>
-          <label class="label text-xs uppercase font-bold opacity-50 pb-0">Data Creazione</label>
+          <label class="label text-xs uppercase font-bold opacity-50 pb-0">
+            Data Creazione
+          </label>
+
           <div class="font-mono text-lg">
             <%= l(@user.created_at, format: :long) %>
           </div>
@@ -95,4 +100,4 @@
       </div>
     </div>
   </div>
-</div>
+<% end %>

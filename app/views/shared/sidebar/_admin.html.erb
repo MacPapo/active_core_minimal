@@ -1,0 +1,95 @@
+<!-- SIZE param -->
+<ul
+  class="menu w-full px-2 py-4 gap-1 text-base-content"
+  data-controller="sidebar-nav"
+>
+  <li>
+    <%= active_link_to root_path, class: "group" do %>
+      <%= icon("dashboard", size: size) %>
+      <%= t("sidebar.items.dashboard", default: "Dashboard") %>
+    <% end %>
+  </li>
+
+  <li>
+    <details id="disclosure-registry" open>
+      <summary class="group font-semibold text-base-content/60">
+        <%= icon("group", size: size) %>
+        <%= t("sidebar.sections.registry", default: "Anagrafica") %>
+      </summary>
+
+      <ul>
+        <li>
+          <%= active_link_to members_path, class: "group" do %>
+            <%= icon("member", size: size) %>
+            <%= t("sidebar.items.members", default: "Soci") %>
+          <% end %>
+
+          <%= yield :member_actions if content_for?(:member_actions) %>
+        </li>
+
+        <li>
+          <%= active_link_to users_path, class: "group" do %>
+            <%= icon("users_admin", size: size) %>
+            <%= t("sidebar.items.system_users", default: "Utenti Sistema") %>
+          <% end %>
+
+          <%= yield :user_actions if content_for?(:user_actions) %>
+        </li>
+      </ul>
+    </details>
+  </li>
+
+  <li>
+    <details id="disclosure-catalog" open>
+      <summary class="group font-semibold text-base-content/60">
+        <%= icon("category", size: size) %>
+        <%= t("sidebar.sections.catalog", default: "Catalogo") %>
+      </summary>
+
+      <ul>
+        <li>
+          <%= active_link_to products_path, class: "group" do %>
+            <%= icon("product", size: size) %>
+            <%= t("sidebar.items.products", default: "Prodotti") %>
+          <% end %>
+
+          <%= yield :product_actions if content_for?(:product_actions) %>
+        </li>
+
+        <li>
+          <%= active_link_to disciplines_path, class: "group" do %>
+            <%= icon("spa", size: size) %>
+            <%= t("sidebar.items.disciplines", default: "Discipline") %>
+          <% end %>
+        </li>
+      </ul>
+    </details>
+  </li>
+
+  <li>
+    <details id="disclosure-accounting" open>
+      <summary class="group font-semibold text-base-content/60">
+        <%= icon("payments", size: size) %>
+        <%= t("sidebar.sections.accounting", default: "Amministrazione") %>
+      </summary>
+
+      <ul>
+        <li>
+          <%= active_link_to sales_path, class: "group" do %>
+            <%= icon("receipt", size: size) %>
+            <%= t("sidebar.items.payments", default: "Vendite") %>
+          <% end %>
+
+          <%= yield :sale_actions if content_for?(:sale_actions) %>
+        </li>
+
+        <li>
+          <%= active_link_to reports_path(:daily_cash), class: "group" do %>
+            <%= icon("sale", size: size) %>
+            <%= t("sidebar.items.daily_cash", default: "Chiusura Cassa") %>
+          <% end %>
+        </li>
+      </ul>
+    </details>
+  </li>
+</ul>

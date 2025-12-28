@@ -1,25 +1,28 @@
-<tr>
+<tr id="<%= dom_id(user) %>_row">
   <%# UTENTE (Avatar + Nome) %>
-  <td class="pl-6">
+  <td>
     <div class="flex items-center gap-3">
-      <div class="avatar placeholder">
-        <div class="bg-neutral text-neutral-content rounded-full w-10">
-          <span class="font-bold"><%= user %></span>
+      <div class="avatar avatar-placeholder">
+        <div class="rounded-full w-10" style="<%= user.avatar_color_style %>">
+          <span class="font-bold font-mono"><%= user.initials %></span>
         </div>
       </div>
 
       <div>
-        <div class="font-bold"><%= user.full_name %></div>
+        <%= link_to [user],
+		    class: "font-bold text-base-content hover:text-primary transition-colors truncate" do %>
+          <%= highlight user.full_name, params.dig(:query, :query) %>
+        <% end %>
 
-        <div class="text-xs opacity-50">
-          Creato il <%= l(user.created_at.to_date) %>
+        <div class="font-mono text-sm opacity-50">
+          Creato il <%= format_date(user.created_at) %>
         </div>
       </div>
     </div>
   </td>
 
   <%# USERNAME %>
-  <td class="font-mono text-sm opacity-80">@<%= user.username %></td>
+  <td class="font-mono text-sm font-bold opacity-80">@<%= user.username %></td>
 
   <%# RUOLO %>
   <td class="text-center">
@@ -43,28 +46,29 @@
   </td>
 
   <%# AZIONI %>
-  <td class="text-right pr-6 w-1">
-    <div class="dropdown dropdown-end">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-square">
-        <%= icon("more_vert", size: 18) %>
-      </div>
+  <td class="text-right w-1 pr-4 align-middle">
+    <div class="join">
+      <%= link_to [user],
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { tip: "Dettaglio" } do %>
+        <%= icon("view", size: 16) %>
+      <% end %>
 
-      <ul
-        tabindex="0"
-        class="
-          dropdown-content menu bg-base-100 rounded-box z-[1]
-          w-52 p-2 shadow border border-base-200
-        "
-      >
-        <li><%= link_to "VEdi", user_path(user) %></li>
-        <li><%= link_to "Modifica", edit_user_path(user) %></li>
+      <%= link_to [:edit, user],
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { tip: "Modifica", turbo_frame: "modal" } do %>
+        <%= icon("edit", size: 16) %>
+      <% end %>
 
-        <li>
-          <%= link_to "Archivia", user_path(user), 
-                  class: "text-error", 
-                    data: { turbo_method: :delete, turbo_confirm: "Sei sicuro di voler revocare l'accesso a #{user.username}?" } %>
-        </li>
-      </ul>
+      <%= link_to [user],
+		  class: "join-item text-error btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: {
+		    tip: "Archivia",
+		    turbo_method: :delete,
+		    turbo_confirm: "Sei sicuro di voler revocare l'accesso a #{user.username}?"
+		  } do %>
+        <%= icon("delete", size: 16) %>
+      <% end %>
     </div>
   </td>
 </tr>

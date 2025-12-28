@@ -23,7 +23,6 @@ class Sale < ApplicationRecord
   before_validation :assign_receipt_number, on: :create
 
   private
-
     def snapshot_product_details
       return unless product.present?
 
