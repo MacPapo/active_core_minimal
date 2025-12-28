@@ -1,24 +1,22 @@
-# app/models/daily_cash.rb
 class DailyCash
-  # Orario di taglio tra turno mattina e pomeriggio (14:00)
   SPLIT_HOUR = 14
-
   attr_reader :date
 
-  def initialize(date = Date.current)
+  # Aggiungiamo il parametro opzionale 'sales'
+  def initialize(date = Date.current, sales: nil)
     @date = date
+    @preloaded_sales = sales # Può essere nil o un Array di Sale
   end
 
-  # Factory method per comodità (stile SportYear)
   def self.current
     new(Date.current)
   end
 
-  def self.for(date)
-    new(date)
+  def self.for(date, sales: nil)
+    new(date, sales: sales)
   end
 
-  # --- API PUBBLICA (Restituisce Float/BigDecimal come il tuo Monetizable) ---
+  # --- API ---
 
   def morning_total
     to_currency(morning_cents)
@@ -33,45 +31,65 @@ class DailyCash
   end
 
   def count
-    base_scope.count
+    @preloaded_sales ? @preloaded_sales.count : base_scope.count
   end
 
   def empty?
     count.zero?
   end
 
-  # --- LOGICA DI AGGREGAZIONE (Memoizzata per performance) ---
+  # Utile per la view 'show'
+  def morning_sales
+    return filter_sales_in_memory { |s| s.created_at < split_time } if @preloaded_sales
+    base_scope.where("created_at < ?", split_time).order(:created_at)
+  end
+
+  def afternoon_sales
+    return filter_sales_in_memory { |s| s.created_at >= split_time } if @preloaded_sales
+    base_scope.where("created_at >= ?", split_time).order(:created_at)
+  end
+
+  # --- LOGICA DI AGGREGAZIONE ---
 
   def morning_cents
-    @morning_cents ||= base_scope.where("created_at < ?", split_time).sum(:amount_cents)
+    # Se abbiamo i dati in memoria, usiamo Ruby (SUM veloce su Array)
+    if @preloaded_sales
+      @morning_cents ||= @preloaded_sales.select { |s| s.created_at < split_time }.sum(&:amount_cents)
+    else
+      # Altrimenti facciamo la query SQL
+      @morning_cents ||= base_scope.where("created_at < ?", split_time).sum(:amount_cents)
+    end
   end
 
   def afternoon_cents
-    @afternoon_cents ||= base_scope.where("created_at >= ?", split_time).sum(:amount_cents)
+    if @preloaded_sales
+      @afternoon_cents ||= @preloaded_sales.select { |s| s.created_at >= split_time }.sum(&:amount_cents)
+    else
+      @afternoon_cents ||= base_scope.where("created_at >= ?", split_time).sum(:amount_cents)
+    end
   end
 
   def total_cents
-    # Facciamo la somma dei parziali per coerenza matematica,
-    # oppure potremmo fare base_scope.sum(:amount_cents)
     morning_cents + afternoon_cents
   end
 
   private
 
-    # Definiamo il perimetro: Vendite attive, di quel giorno, solo contanti.
     def base_scope
       Sale.kept.where(sold_on: @date, payment_method: :cash)
     end
 
-    # Calcoliamo il timestamp delle 14:00 del giorno in questione.
-    # Fondamentale usare in_time_zone per rispettare il fuso orario del server/config.
     def split_time
       @split_time ||= @date.in_time_zone.change(hour: SPLIT_HOUR, min: 0, sec: 0)
     end
 
-    # Helper per convertire i centesimi in unità (Simula il getter di Monetizable)
     def to_currency(cents)
       return 0.0 unless cents
       cents / 100.0
+    end
+
+    # Helper per ordinare i risultati in memoria quando usiamo l'array
+    def filter_sales_in_memory(&block)
+      @preloaded_sales.select(&block).sort_by(&:created_at)
     end
 end

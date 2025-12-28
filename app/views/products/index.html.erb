@@ -1,113 +1,44 @@
-<div class="container mx-auto max-w-6xl p-6 space-y-6">
-  <div class="flex justify-between items-center">
-    <div>
-      <h1 class="text-3xl font-bold font-mono tracking-tight">
-        Listino Prodotti
-      </h1>
-      <p class="text-base-content/60 mt-1">
-        Definisci abbonamenti, ingressi e servizi.
-      </p>
-    </div>
+<%= turbo_stream_from "products" %>
 
-    <%= link_to new_product_path, class: "btn btn-primary gap-2" do %>
-      <%= icon("add", size: 20) %>
-      Nuovo Prodotto
+<% content_for :page_title, Product.model_name.human(count: 2) %>
+
+<% content_for :page_counter, t("search.results", count: 10) %>
+
+<% content_for :page_actions do %>
+  <%= link_to [:new, :product],
+	      class: "btn btn-primary gap-2",
+	      data: { turbo_frame: "modal" } do %>
+    <%= icon("add", size: 20) %>
+    <span class="hidden sm:inline"><%= t("actions.new") %></span>
+  <% end %>
+<% end %>
+
+<!-- TODO filters -->
+
+<%= render "shared/header/page" %>
+<%= render "shared/filter/active", filter_keys: @keys %>
+
+<%= render "shared/table", pagy: @pagy do %>
+  <thead>
+    <tr>
+      <th class="pl-6">Nome Prodotto</th>
+      <th>Discipline Incluse</th>
+      <th class="text-center">Durata</th>
+      <th class="text-center">Categoria</th>
+      <th class="text-right pr-6">Prezzo</th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <%= render partial: "product_row", collection: @products, as: :product %>
+
+    <% if @products.empty? %>
+      <tr>
+        <td colspan="6" class="text-center py-10 opacity-50 italic">
+          Nessun prodotto nel listino.
+        </td>
+      </tr>
     <% end %>
-  </div>
-
-  <div class="card bg-base-100 shadow-xl border border-base-200 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="table w-full">
-        <thead>
-          <tr>
-            <th class="pl-6">Nome Prodotto</th>
-            <th>Discipline Incluse</th>
-            <th class="text-center">Durata</th>
-            <th class="text-center">Categoria</th>
-            <th class="text-right pr-6">Prezzo</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if @products.any? %>
-            <% @products.each do |product| %>
-              <tr class="group hover:bg-base-200/50 transition-colors">
-                <%# NOME %>
-                <td class="pl-6 font-bold text-lg">
-                  <%= link_to product.name, product, class: "hover:underline decoration-primary decoration-2 underline-offset-2" %>
-                </td>
-
-                <%# DISCIPLINE %>
-                <td>
-                  <div class="flex flex-wrap gap-1">
-                    <% if product.disciplines.any? %>
-                      <% product.disciplines.each do |d| %>
-                        <span class="badge badge-sm badge-ghost"><%= d.name %></span>
-                      <% end %>
-                    <% else %>
-                      <span class="text-xs opacity-40 italic">Nessuna</span>
-                    <% end %>
-                  </div>
-                </td>
-
-                <%# DURATA %>
-                <td class="text-center font-mono text-sm">
-                  <%= product.duration_days %> gg
-                </td>
-
-                <%# CATEGORIA CONTABILE %>
-                <td class="text-center">
-                  <% if product.associative? %>
-                    <span class="badge badge-info badge-outline text-xs">Istituzionale</span>
-                  <% else %>
-                    <span class="badge badge-warning badge-outline text-xs">Commerciale</span>
-                  <% end %>
-                </td>
-
-                <%# PREZZO %>
-                <td class="text-right pr-6 font-mono font-bold text-lg">
-                  <%= format_money(product.price) %>
-                </td>
-
-                <%# AZIONI %>
-                <td class="text-right w-1">
-                  <div class="dropdown dropdown-end">
-                    <div
-                      tabindex="0"
-                      role="button"
-                      class="btn btn-ghost btn-sm btn-square"
-                    >
-                      <%= icon("more_vert", size: 18) %>
-                    </div>
-                    <ul
-                      tabindex="0"
-                      class="
-                        dropdown-content menu bg-base-100 rounded-box z-[1]
-                        w-52 p-2 shadow border border-base-200
-                      "
-                    >
-                      <li>
-                        <%= link_to "Modifica", edit_product_path(product) %>
-                      </li>
-                      <li>
-                        <%= link_to "Archivia", product_path(product), 
-                            class: "text-error", 
-                            data: { turbo_method: :delete, turbo_confirm: "Sei sicuro?" } %>
-                      </li>
-                    </ul>
-                  </div>
-                </td>
-              </tr>
-            <% end %>
-          <% else %>
-            <tr>
-              <td colspan="6" class="text-center py-10 opacity-50 italic">
-                Nessun prodotto nel listino.
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+  </tbody>
+<% end %>

@@ -1,136 +1,45 @@
-<div class="container mx-auto max-w-6xl p-6 space-y-6">
-  <div class="flex justify-between items-center">
-    <div>
-      <h1 class="text-3xl font-bold font-mono tracking-tight">
-        Registro Vendite
-      </h1>
-      <p class="text-base-content/60 mt-1">
-        Storico transazioni e ricevute emesse.
-      </p>
-    </div>
+<%= turbo_stream_from "sales" %>
 
-    <%# Tasto generico, ma di solito si parte dal Socio %>
-    <%= link_to new_sale_path, class: "btn btn-primary gap-2" do %>
-      <%= icon("point_of_sale", size: 20) %>
-      Nuova Vendita
+<% content_for :page_title, Sale.model_name.human(count: 2) %>
+
+<% content_for :page_counter, t("search.results", count: 10) %>
+
+<% content_for :page_actions do %>
+  <%= link_to [:new, :sale],
+	      class: "btn btn-primary gap-2",
+	      data: { turbo_frame: "modal" } do %>
+    <%= icon("add", size: 20) %>
+    <span class="hidden sm:inline"><%= t("actions.new") %></span>
+  <% end %>
+<% end %>
+
+<!-- TODO filters -->
+
+<%= render "shared/header/page" %>
+<%= render "shared/filter/active", filter_keys: @keys %>
+
+<%= render "shared/table", pagy: @pagy do %>
+  <thead>
+    <tr>
+      <th class="pl-6">Data</th>
+      <th>Ricevuta</th>
+      <th>Socio</th>
+      <th>Prodotto</th>
+      <th class="text-center">Metodo</th>
+      <th class="text-right pr-6">Totale</th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <%= render partial: "sale_row", collection: @sales, as: :sale %>
+
+    <% if @sales.empty? %>
+      <tr>
+        <td colspan="7" class="text-center py-10 opacity-50 italic">
+          Nessuna vendita registrata.
+        </td>
+      </tr>
     <% end %>
-  </div>
-
-  <div class="card bg-base-100 shadow-xl border border-base-200 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="table w-full">
-        <thead>
-          <tr>
-            <th class="pl-6">Data</th>
-            <th>Ricevuta</th>
-            <th>Socio</th>
-            <th>Prodotto</th>
-            <th class="text-center">Metodo</th>
-            <th class="text-right pr-6">Totale</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if @sales.any? %>
-            <% @sales.each do |sale| %>
-              <tr class="group hover:bg-base-200/50 transition-colors">
-                <%# DATA %>
-                <td class="pl-6 font-mono text-sm opacity-80">
-                  <%= l(sale.sold_on) %>
-                </td>
-
-                <%# RICEVUTA %>
-                <td class="font-mono font-bold text-xs">
-                  <% if sale.receipt_code.present? %>
-                    <%= sale.receipt_code %>
-                  <% else %>
-                    <span class="opacity-30">—</span>
-                  <% end %>
-                </td>
-
-                <%# SOCIO %>
-                <td>
-                  <%= link_to sale.member.full_name, member_path(sale.member), class: "font-bold hover:text-primary link-hover" %>
-                </td>
-
-                <%# PRODOTTO %>
-                <td>
-                  <div class="font-medium">
-                    <%= sale.product_name_snapshot %>
-                  </div>
-                  <div class="text-[10px] opacity-50 flex items-center gap-1">
-                    <%= icon("badge", size: 10) %> op: <%= sale.user.username %>
-                  </div>
-                </td>
-
-                <%# METODO PAGAMENTO %>
-                <td class="text-center">
-                  <% case sale.payment_method %>
-                  <% when 'cash' %>
-                    <div class="badge badge-success badge-outline gap-1 text-xs">
-                      <%= icon("payments", size: 12) %> Contanti
-                    </div>
-                  <% when 'credit_card' %>
-                    <div class="badge badge-info badge-outline gap-1 text-xs">
-                      <%= icon("credit_card", size: 12) %> Carta
-                    </div>
-                  <% else %>
-                    <div class="badge badge-ghost badge-outline text-xs">
-                      <%= sale.payment_method.humanize %>
-                    </div>
-                  <% end %>
-                </td>
-
-                <%# IMPORTO %>
-                <td class="text-right pr-6 font-mono font-bold text-lg">
-                  <%= format_money(sale.amount) %>
-                </td>
-
-                <%# AZIONI %>
-                <td class="text-right w-1">
-                  <div class="dropdown dropdown-end">
-                    <div
-                      tabindex="0"
-                      role="button"
-                      class="btn btn-ghost btn-sm btn-square"
-                    >
-                      <%= icon("more_vert", size: 18) %>
-                    </div>
-                    <ul
-                      tabindex="0"
-                      class="
-                        dropdown-content menu bg-base-100 rounded-box z-[1]
-                        w-52 p-2 shadow border border-base-200
-                      "
-                    >
-                      <li>
-                        <%= link_to sale_path(sale) do %>
-                          <%= icon("receipt", size: 16) %>
-                          Dettagli / Stampa
-                        <% end %>
-                      </li>
-                      <li>
-                        <%= link_to sale_path(sale), 
-                            class: "text-error", 
-                            data: { turbo_method: :delete, turbo_confirm: "Sei sicuro di voler stornare questa vendita? L'abbonamento collegato verrà annullato." } do %>
-                          <%= icon("delete", size: 16) %>
-                          Storna Vendita
-                        <% end %>
-                      </li>
-                    </ul>
-                  </div>
-                </td>
-              </tr>
-            <% end %>
-          <% else %>
-            <tr>
-              <td colspan="7" class="text-center py-10 opacity-50 italic">
-                Nessuna vendita registrata.
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+  </tbody>
+<% end %>

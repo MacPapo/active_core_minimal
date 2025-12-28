@@ -1,4 +1,41 @@
-<div>
-  <h1 class="font-bold text-4xl">Members::Sales#index</h1>
-  <p>Find me in app/views/members/sales/index.html.erb</p>
-</div>
+<%= turbo_stream_from @member %>
+
+<%= render layout: "members/shell", locals: { member: @member } do %>
+  <div class="flex justify-between items-center">
+    <h1 class="text-3xl font-bold tracking-tight">Storico Acquisti</h1>
+
+    <div class="stat-value text-primary text-2xl">
+      <%= format_cents(@sales.sum(&:amount_cents)) %>
+
+      <span class="text-xs font-normal text-base-content/50 block text-right mt-1">
+        Totale speso
+      </span>
+    </div>
+  </div>
+
+  <%= render "shared/table", pagy: @pagy do %>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Ricevuta</th>
+        <th>Prodotto / Descrizione</th>
+        <th>Metodo</th>
+        <th>Operatore</th>
+        <th class="text-right">Importo</th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <%= render partial: "sale_row", collection: @sales, as: :sale %>
+
+      <% if @sales.empty? %>
+        <tr>
+          <td colspan="7" class="text-center py-10 opacity-50 italic">
+            Nessun acquisto registrato per questo membro.
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  <% end %>
+<% end %>

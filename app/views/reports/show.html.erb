@@ -1,4 +1,179 @@
-<div>
-  <h1 class="font-bold text-4xl">Reports#show</h1>
-  <p>Find me in app/views/reports/show.html.erb</p>
+<div class="container mx-auto max-w-4xl p-6 space-y-8">
+  <%# Header con navigazione (Nascondi in stampa) %>
+  <div class="flex justify-between items-center print:hidden">
+    <%# Link per tornare indietro: punta all'Index (reports_path) mantenendo la data %>
+    <%= link_to reports_path(date: @date), class: "btn btn-ghost gap-2 pl-0" do %>
+      <%= icon("arrow_back") %> Torna al Mese
+    <% end %>
+
+    <%# Bottone che attiva la funzione stampa del browser %>
+    <button onclick="window.print()" class="btn btn-primary gap-2">
+      <%= icon("print") %> Stampa Report
+    </button>
+  </div>
+
+  <%# Intestazione Report (Visibile in stampa) %>
+  <div class="text-center border-b-2 border-base-200 pb-6 mb-6">
+    <h1 class="text-3xl font-bold uppercase tracking-widest">Chiusura Cassa</h1>
+
+    <div class="text-lg font-mono opacity-60 mt-2">
+      <%= l(@date, format: :long) %>
+    </div>
+  </div>
+
+  <%# --- RIEPILOGO TOTALI --- %>
+  <div class="stats shadow w-full border border-base-200 mb-8 bg-base-100">
+    <div class="stat place-items-center">
+      <div class="stat-title">Mattina</div>
+
+      <div class="stat-value text-2xl">
+        <%= format_money(@daily_cash.morning_total) %>
+      </div>
+    </div>
+
+    <div class="stat place-items-center">
+      <div class="stat-title">Pomeriggio</div>
+
+      <div class="stat-value text-2xl">
+        <%= format_money(@daily_cash.afternoon_total) %>
+      </div>
+    </div>
+
+    <div class="stat place-items-center bg-base-200">
+      <div class="stat-title font-bold text-primary">TOTALE NETTO</div>
+
+      <div class="stat-value text-3xl text-primary">
+        <%= format_money(@daily_cash.total) %>
+      </div>
+    </div>
+  </div>
+
+  <%# --- LISTA VENDITE DETTAGLIATA --- %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <%# COLONNA MATTINA %>
+    <div class="card bg-base-100 shadow-sm border border-base-200">
+      <div
+        class="
+          card-header p-4 bg-base-200/50 font-bold text-center border-b
+          border-base-200 flex items-center justify-center gap-2
+        "
+      >
+        <%= icon("sunny", size: 18) %> Turno Mattina
+        <span class="text-xs font-normal opacity-50">(00:00 - 13:59)</span>
+      </div>
+
+      <div class="card-body p-0">
+        <table class="table table-sm w-full">
+          <tbody>
+            <% if @daily_cash.morning_sales.any? %>
+              <% @daily_cash.morning_sales.each do |sale| %>
+                <tr class="hover:bg-base-100">
+                  <td class="font-mono text-xs opacity-50 pl-4 w-12">
+                    <%= l(sale.created_at, format: :short) %>
+                  </td>
+
+                  <td>
+                    <div class="font-bold text-sm">
+                      <%= sale.member.full_name %>
+                    </div>
+
+                    <div class="text-xs opacity-60 truncate max-w-[150px]">
+                      <%= sale.product_name_snapshot %>
+                    </div>
+                  </td>
+
+                  <td class="text-right font-mono pr-4 font-bold">
+                    <%= format_money(sale.amount) %>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="3" class="text-center py-8 opacity-40 italic">
+                  Nessun movimento
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <%# COLONNA POMERIGGIO %>
+    <div class="card bg-base-100 shadow-sm border border-base-200">
+      <div
+        class="
+          card-header p-4 bg-base-200/50 font-bold text-center border-b
+          border-base-200 flex items-center justify-center gap-2
+        "
+      >
+        <%= icon("bedtime", size: 18) %> Turno Pomeriggio
+        <span class="text-xs font-normal opacity-50">(14:00 - 23:59)</span>
+      </div>
+
+      <div class="card-body p-0">
+        <table class="table table-sm w-full">
+          <tbody>
+            <% if @daily_cash.afternoon_sales.any? %>
+              <% @daily_cash.afternoon_sales.each do |sale| %>
+                <tr class="hover:bg-base-100">
+                  <td class="font-mono text-xs opacity-50 pl-4 w-12">
+                    <%= l(sale.created_at, format: :short) %>
+                  </td>
+
+                  <td>
+                    <div class="font-bold text-sm">
+                      <%= sale.member.full_name %>
+                    </div>
+
+                    <div class="text-xs opacity-60 truncate max-w-[150px]">
+                      <%= sale.product_name_snapshot %>
+                    </div>
+                  </td>
+
+                  <td class="text-right font-mono pr-4 font-bold">
+                    <%= format_money(sale.amount) %>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="3" class="text-center py-8 opacity-40 italic">
+                  Nessun movimento
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <%# Footer per firma (utile in stampa cartacea) %>
+  <div class="hidden print:flex justify-between mt-12 pt-12 border-t border-gray-300">
+    <div class="text-sm">
+      <div class="border-t border-black w-48 mt-8"></div>
+      Firma Operatore
+    </div>
+
+    <div class="text-sm text-right">
+      <div class="border-t border-black w-48 mt-8"></div>
+      Firma Amministrazione
+    </div>
+  </div>
 </div>
+
+<%# Stile CSS che si attiva SOLO quando fai Stampa %>
+<style type="text/css" media="print">
+ @page { size: A4; margin: 1cm; }
+ body { background: white; color: black; font-family: sans-serif; }
+ /* Nascondi elementi di navigazione dell'app */
+ .navbar, .drawer-toggle, .btn-ghost, .alert { display: none !important; }
+ 
+ /* Rimuovi ombre e bordi decorativi per risparmiare inchiostro */
+ .card, .stats { box-shadow: none !important; border: 1px solid #ccc !important; }
+ .bg-base-200, .bg-base-100 { background-color: white !important; }
+ 
+ /* Evita che le tabelle vengano tagliate a metà pagina */
+ .card { break-inside: avoid; }
+</style>

@@ -1,3 +1,4 @@
+# app/models/concerns/monetizable.rb
 module Monetizable
   extend ActiveSupport::Concern
 
@@ -5,43 +6,46 @@ module Monetizable
     def monetize(attribute_name)
       cents_column = "#{attribute_name}_cents"
 
-      # 1. GETTER (DB -> View)
       define_method(attribute_name) do
         cents = send(cents_column)
         return nil unless cents
-        cents / 100.0
+        (cents / 100.0).round(2)
       end
 
-      # 2. SETTER (View -> DB)
       define_method("#{attribute_name}=") do |value|
         return send("#{cents_column}=", nil) if value.blank?
 
+        # A. Se è già un numero (es: 10.50 o 100)
         if value.is_a?(Numeric)
-          self.send("#{cents_column}=", (value * 100).to_i)
+          # .round(2) evita problemi di virgola mobile (es. 10.5500000001)
+          self.send("#{cents_column}=", (value.to_f.round(2) * 100).to_i)
+
+        # B. Se è una stringa (Parsing avanzato)
         else
-          # A. Pulizia base: teniamo solo numeri, punti, virgole e segno meno
-          clean_string = value.to_s.gsub(/[^\d.,-]/, "")
+          # Rimuoviamo spazi e simbolo valuta
+          clean = value.to_s.gsub(/[^\d.,-]/, "").strip
 
-          # B. Gestione avanzata separatori (Migliaia vs Decimali)
-          # Se ci sono SIA punti CHE virgole, dobbiamo capire chi fa cosa.
-          if clean_string.include?(".") && clean_string.include?(",")
-            last_dot_index = clean_string.rindex(".")
-            last_comma_index = clean_string.rindex(",")
+          # Caso critico: "1.200" (senza virgola). In Italia è 1200, in USA è 1.2
+          # SOLUZIONE: Se c'è solo il punto, contiamo i decimali.
+          # Se sono 3 (es: 1.000), assumiamo siano migliaia.
 
-            if last_dot_index < last_comma_index
-              # Formato IT: 1.200,50 -> Il punto viene prima, quindi è migliaia. Lo togliamo.
-              clean_string = clean_string.gsub(".", "")
-            else
-              # Formato US: 1,200.50 -> La virgola viene prima, quindi è migliaia. La togliamo.
-              clean_string = clean_string.gsub(",", "")
+          if clean.include?(".") && !clean.include?(",")
+            parts = clean.split(".")
+            if parts.last.length == 3
+              # È probabile che sia un separatore migliaia (1.000) -> togliamo il punto
+              clean = clean.gsub(".", "")
             end
           end
 
-          # C. Standardizzazione finale: virgola diventa sempre punto decimale
-          standardized_string = clean_string.gsub(",", ".")
+          # Se ci sono sia punti che virgole (1.200,50), togliamo i punti (migliaia)
+          if clean.include?(".") && clean.include?(",")
+            clean = clean.gsub(".", "")
+          end
 
-          # D. Conversione sicura
-          self.send("#{cents_column}=", (BigDecimal(standardized_string) * 100).to_i)
+          # Sostituiamo la virgola con punto per renderlo comprensibile a Ruby
+          standardized = clean.gsub(",", ".")
+
+          self.send("#{cents_column}=", (BigDecimal(standardized) * 100).to_i)
         end
       end
     end

@@ -34,17 +34,22 @@ module FormatHelper
   # ==========================================
   # MONEY & NUMBERS
   # ==========================================
-
-  # Modificato per supportare il tuo concern Monetizable
   def format_money(amount, currency: "EUR")
     return display_value(nil) if amount.nil?
 
-    number_to_currency(amount, unit: currency == "EUR" ? "€" : currency)
+    number_to_currency(amount, unit: currency == "EUR" ? "€" : currency, format: "%n %u")
+  end
+
+  # Usa questo quando hai la colonna raw dal DB (es. sales.sum(:amount_cents))
+  # Input: 1050 -> "10,50 €"
+  def format_cents(cents, currency: "EUR")
+    return display_value(nil) if cents.nil?
+
+    format_money(cents / 100.0, currency: currency)
   end
 
   def format_percentage(number, precision: 0)
     return display_value(nil) unless number
-    # Assumiamo che 0.5 significhi 50%
     number_to_percentage(number * 100, precision: precision)
   end
 

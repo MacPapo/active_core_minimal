@@ -60,14 +60,16 @@ class UsersController < ApplicationController
     end
 
     def user_params
-      params.require(:user).permit(
+      permitted_params = [
         :first_name,
         :last_name,
         :username,
         :email_address,
-        :role,
         :password,
-        :password_confirmation
-      )
+        :password_confirmation ]
+
+      permitted_params << :role if current_user&.admin?
+
+      params.require(:user).permit(permitted_params)
     end
 end
