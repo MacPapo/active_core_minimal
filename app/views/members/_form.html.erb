@@ -2,7 +2,10 @@
   <%= render "shared/form_errors", model: member %>
 
   <%# --- SEZIONE 1: DATI ANAGRAFICI --- %>
-  <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box shadow-sm">
+  <fieldset
+    class="fieldset bg-base-100 border border-base-300 p-4 rounded-box shadow-sm"
+    data-controller="fiscal-code"
+  >
     <legend class="fieldset-legend">
       <%= icon("badge", size: 14) %>
       <%= t("members.form.sections.personal", default: "Dati Anagrafici") %>
@@ -25,12 +28,26 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-2">
       <div>
         <%= f.label :fiscal_code, class: "label" %>
-        <%= f.text_field :fiscal_code, required: true, class: "input w-full uppercase font-mono tracking-wide", placeholder: "RSSMRA..." %>
+
+        <%= f.text_field :fiscal_code,
+	  required: true, 
+	  class: "input w-full uppercase font-mono tracking-wide",
+	  placeholder: "RSSMRA...",
+	 data: { 
+            fiscal_code_target: "code",
+            action: "input->fiscal-code#autofill"
+          } %>
       </div>
 
       <div>
         <%= f.label :birth_date, class: "label" %>
-        <%= f.date_field :birth_date, required: true, class: "input w-full" %>
+
+        <%= f.date_field :birth_date,
+	     required: true, 
+	     class: "input w-full transition-colors duration-300",
+	     data: { 
+	       fiscal_code_target: "birthDate"
+	     } %>
       </div>
     </div>
   </fieldset>

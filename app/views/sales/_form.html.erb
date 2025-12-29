@@ -1,5 +1,9 @@
-<%= form_with(model: sale, class: "grid grid-cols-1 xl:grid-cols-3 gap-6 items-start") do |f| %>
-  <%# --- COLONNA SINISTRA: DATI VENDITA (2/3) --- %>
+<%# Data Controller: Colleghiamo il form al controller Stimulus 'sales-form' %>
+
+<%= form_with(model: sale, 
+      class: "grid grid-cols-1 xl:grid-cols-3 gap-6 items-start",
+      data: { controller: "sales-form" }) do |f| %>
+  <%# --- COLONNA SINISTRA (2/3) --- %>
   <div class="xl:col-span-2 space-y-6">
     <%= render "shared/form_errors", model: sale %>
 
@@ -12,8 +16,9 @@
       <%# 1. SELEZIONE SOCIO %>
       <div class="w-full mb-4">
         <% if sale.member %>
-          <%# CASO 1: Socio già selezionato %>
-          <%= f.hidden_field :member_id %>
+          <%# CASO A: Socio già deciso (es. arrivi dal profilo) %>
+          <%# Mettiamo il target sull'hidden field così il JS può leggere l'ID se serve %>
+          <%= f.hidden_field :member_id, data: { sales_form_target: "memberSelect" } %>
           <div
             class="
               flex items-center justify-between p-3 bg-base-200/50 border
@@ -23,7 +28,9 @@
             <div class="flex items-center gap-3">
               <div class="avatar placeholder">
                 <div class="bg-primary text-primary-content rounded-full w-10">
-                  <span class="text-lg font-bold"><%= sale.member %></span>
+                  <span class="text-lg font-bold">
+                    <%= sale.member.initials %>
+                  </span>
                 </div>
               </div>
 
@@ -41,43 +48,76 @@
             <%= link_to "Cambia", members_path(q: "selection"), class: "btn btn-sm btn-ghost text-error" %>
           </div>
         <% else %>
-          <%# CASO 2: Nuovo inserimento %>
+          <%# CASO B: Selezione Socio manuale %>
           <%= f.label :member_id, "Socio Acquirente", class: "label" %>
-          <%# FIX VALIDAZIONE: Aggiunto required: true %>
           <%= f.collection_select :member_id, 
               Member.kept.order(:last_name), :id, :full_name, 
               { prompt: "Seleziona Socio..." }, 
-              { class: "select select-bordered w-full", required: true } %>
+              { 
+                class: "select select-bordered w-full", 
+                required: true,
+                data: { 
+                  sales_form_target: "memberSelect",
+                  action: "change->sales-form#refreshData"
+                } 
+              } %>
         <% end %>
       </div>
 
       <div class="divider my-2 opacity-50"></div>
 
-      <%# 2. SELEZIONE PRODOTTO %>
+      <%# 2. SELEZIONE PRODOTTO (RAGGRUPPATO PER DISCIPLINA) %>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="w-full">
           <%= f.label :product_id, "Prodotto / Servizio", class: "label" %>
 
-          <%# FIX VALIDAZIONE: Aggiunto required: true %>
-          <%= f.collection_select :product_id, 
-              Product.kept.order(:name), :id, :name, 
-              { prompt: "Seleziona Prodotto..." }, 
-              { class: "select select-bordered w-full font-medium", required: true } %>
+          <% products = Product.kept.includes(:disciplines).order(:name)
+          grouped_hash = products.group_by { |p| p.disciplines.first&.name || "Generale" }
+          sorted_groups = grouped_hash.sort_by { |name, _| name }
+          grouped_options = sorted_groups.map do |discipline_name, group_products|
+            [
+              discipline_name,
+              group_products.map { |p| 
+                [
+                  p.name, 
+                  p.id, 
+                  {
+		    'data-price': p.price.to_s,
+		    'data-duration': p.duration_days.to_s,
+		  }
+                ] 
+              }
+            ]
+          end %>
+
+          <%= f.select :product_id, 
+              grouped_options_for_select(grouped_options, sale.product_id),
+              { prompt: "Seleziona Prodotto..." },
+              { 
+                class: "select select-bordered w-full font-medium",
+                required: true,
+                data: { 
+                  sales_form_target: "productSelect",
+                  action: "change->sales-form#refreshData"
+                }
+              } %>
         </div>
 
         <%# 3. DATA INIZIO VALIDITÀ (Annidata) %>
         <div class="w-full">
-          <%# Usiamo fields_for per accedere all'oggetto associato %>
           <%= f.fields_for :subscription do |sub_form| %>
             <%= sub_form.label :start_date, class: "label" do %>
               <span>Inizio Validità</span>
-              <span class="label-text-alt opacity-50">Opzionale</span>
+              <span class="label-text-alt opacity-50">Auto-calcolata</span>
             <% end %>
 
-            <%# Rails genererà name="sale[subscription_attributes][start_date]" %>
+            <%# Qui il JS scriverà la data suggerita %>
             <%= sub_form.date_field :start_date, 
             class: "input w-full",
-               title: "Se diverso da oggi (es. rinnovo futuro)" %>
+	       data: {
+		 sales_form_target: "startDateInput", 
+		 action: "input->sales-form#recalculateEndDate"
+	       } %>
           <% end %>
         </div>
       </div>
@@ -100,22 +140,22 @@
               font-bold text-primary
             "
           >
-            € <%# FIX VALIDAZIONE: required, min, step %>
+            €
             <%= f.text_field :amount, 
                 required: true,
-                pattern: "[0-9]+([,\.][0-9]+)?", 
-                title: "Inserisci un importo valido (es. 10,50)",
                 class: "grow border-none focus:ring-0 p-0", 
                 placeholder: "0,00",
-                inputmode: "decimal" %>
+                inputmode: "decimal",
+                data: {
+                  sales_form_target: "amountInput",
+                  action: "input->sales-form#updateTotalDisplay"
+                } %>
           </label>
         </div>
 
-        <%# DATA TRANSAZIONE %>
+        <%# DATA INCASSO %>
         <div>
           <%= f.label :sold_on, "Data Incasso", class: "label" %>
-
-          <%# FIX VALIDAZIONE: required %>
           <%= f.date_field :sold_on, required: true, class: "input w-full" %>
         </div>
       </div>
@@ -127,23 +167,18 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <% Sale.payment_methods.keys.each_with_index do |method, index| %>
             <label class="cursor-pointer group relative">
-              <%# FIX VALIDAZIONE: Selezioniamo il primo di default per evitare form inviati senza metodo %>
-              <%= f.radio_button :payment_method, method, class: "peer sr-only", checked: (index == 0 && f.object.payment_method.nil?) || f.object.payment_method == method %>
+              <%= f.radio_button :payment_method, method, 
+                  class: "peer sr-only", 
+                  checked: (index == 0 && f.object.payment_method.nil?) || f.object.payment_method == method %>
 
               <div
                 class="
-                  p-3 rounded-lg border border-base-300 bg-base-100 text-center transition-all
-                  hover:border-primary/50 hover:bg-base-200
-                  peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:font-bold
+                  p-3 rounded-lg border border-base-300 bg-base-100
+                  text-center transition-all hover:bg-base-200
+                  peer-checked:border-primary peer-checked:bg-primary/10
+                  peer-checked:text-primary peer-checked:font-bold
                 "
               >
-                <% icon_name = case method 
-                   when 'cash' then 'payments'
-                   when 'credit_card' then 'credit_card'
-                   when 'bank_transfer' then 'account_balance'
-                   else 'other' end %>
-
-                <%= icon(icon_name, size: 24, class: "mx-auto mb-1 opacity-70 group-hover:opacity-100 peer-checked:opacity-100") %>
                 <span class="text-xs uppercase"><%= method.humanize %></span>
               </div>
             </label>
@@ -165,12 +200,13 @@
         </div>
 
         <div class="collapse-content">
-          <%= f.text_area :notes, class: "textarea textarea-bordered w-full h-20", placeholder: "Es. Pagamento parziale, sconto famiglia..." %>
+          <%= f.text_area :notes, class: "textarea textarea-bordered w-full h-20" %>
         </div>
       </div>
     </fieldset>
   </div>
 
+  <%# --- COLONNA DESTRA: RIEPILOGO VISIVO --- %>
   <div class="xl:col-span-1 sticky top-6">
     <div class="card bg-base-100 shadow-xl border border-primary/20">
       <div class="card-body p-6">
@@ -181,7 +217,7 @@
         <%# TOTALE VISIVO %>
         <div
           class="
-            bg-base-200/50 rounded-xl p-4 text-center mb-6 border
+            bg-base-200/50 rounded-xl p-4 text-center mb-4 border
             border-base-200
           "
         >
@@ -190,28 +226,53 @@
           </div>
 
           <div class="text-4xl font-black font-mono text-primary mt-1">
-            <span id="total-display">---</span>
+            <span data-sales-form-target="totalDisplay">0,00</span>
             <span class="text-xl align-top opacity-50">€</span>
           </div>
         </div>
 
-        <%# AZIONI %>
+        <%# --- NUOVO BLOCCO DATE --- %>
+        <div class="bg-base-100 rounded-lg border border-base-200 p-3 mb-6 text-sm">
+          <div class="flex justify-between items-center mb-2">
+            <span class="opacity-60 text-xs font-bold uppercase">Inizio</span>
+
+            <span
+              class="font-mono font-bold"
+              data-sales-form-target="startDateDisplay"
+            >
+              ---
+            </span>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <span class="opacity-60 text-xs font-bold uppercase">Scadenza</span>
+
+            <span
+              class="font-mono font-bold text-primary"
+              data-sales-form-target="endDateDisplay"
+            >
+              ---
+            </span>
+          </div>
+
+          <div class="divider my-1 opacity-10"></div>
+
+          <div
+            class="text-center text-xs opacity-50 italic"
+            data-sales-form-target="statusDisplay"
+          >
+            Seleziona un prodotto...
+          </div>
+        </div>
+
+        <%# ------------------------ %>
+
         <div class="flex flex-col gap-3">
           <%= button_tag type: "submit", class: "btn btn-primary w-full shadow-lg h-12 text-lg" do %>
             <%= icon("print", size: 22) %> Emetti Ricevuta
           <% end %>
 
           <%= link_to "Annulla", :back, class: "btn btn-ghost btn-sm w-full text-base-content/60" %>
-        </div>
-
-        <div class="divider my-4 text-xs opacity-40">Info</div>
-
-        <div class="text-xs text-base-content/60 space-y-2">
-          <p>
-            <%= icon("info", size: 12, class: "inline align-text-bottom") %>
-            Premendo "Emetti" verrà generata la ricevuta e aggiornata la
-            validità dell'abbonamento.
-          </p>
         </div>
       </div>
     </div>

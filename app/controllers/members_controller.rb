@@ -12,6 +12,18 @@ class MembersController < ApplicationController
                     .find(params[:id])
   end
 
+  def renewal_info
+    @member = Member.find(params[:id])
+    product = Product.find_by(id: params[:product_id])
+
+    if product
+      info = @member.renewal_info_for(product)
+      render json: info
+    else
+      render json: {}, status: :bad_request
+    end
+  end
+
   def new
     @member = Member.new
   end
