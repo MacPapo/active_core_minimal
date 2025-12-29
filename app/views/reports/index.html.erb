@@ -6,15 +6,15 @@
 
   <div class="join">
     <%= link_to reports_path(date: @date.prev_month), class: "btn btn-sm join-item" do %>
-      <%= icon("chevron_left") %>
+      <%= icon("arrow_left") %>
     <% end %>
 
-    <button class="btn btn-sm join-item no-animation font-mono w-32">
-      <%= l(@date, format: "%B %Y").capitalize %>
+    <button class="btn btn-sm btn-disabled join-item no-animation font-mono text-primary w-32">
+      <%= format_date(@date, format: "%B %Y").capitalize %>
     </button>
 
     <%= link_to reports_path(date: @date.next_month), class: "btn btn-sm join-item" do %>
-      <%= icon("chevron_right") %>
+      <%= icon("arrow_right") %>
     <% end %>
   </div>
 </div>

@@ -61,40 +61,9 @@ class Member < ApplicationRecord
   end
 
   def renewal_info_for(product)
-    return nil unless product
+    dates = RenewalCalculator.new(self, product, Date.current).call
 
-    # 1. Troviamo le discipline del nuovo prodotto
-    # (Assumiamo che tu abbia sistemato has_many :disciplines nel model Product come ci siamo detti prima)
-    discipline_ids = product.discipline_ids
-
-    # 2. Cerchiamo l'ultimo abbonamento di questo socio che ha ALMENO una di quelle discipline
-    #    E che non sia stato cancellato (kept)
-    last_sub = subscriptions.kept
-                 .joins(product: :product_disciplines)
-                 .where(product_disciplines: { discipline_id: discipline_ids })
-                 .order(end_date: :desc)
-                 .first
-
-    # 3. Logica Continuità
-    suggested_start = Date.current
-
-    if last_sub
-      # Se scade nel futuro O è scaduto da meno di 30 giorni (tolleranza)
-      # diamo continuità.
-      if last_sub.end_date >= 30.days.ago.to_date
-        suggested_start = last_sub.end_date + 1.day
-      end
-    end
-
-    # 4. Calcoliamo la fine in base alla durata del nuovo prodotto
-    # (product.duration_days deve essere un intero nel DB)
-    suggested_end = suggested_start + product.duration_days.days - 1.day
-
-    # Ritorniamo un hash semplice
-    {
-      start_date: suggested_start,
-      end_date: suggested_end,
-      last_subscription_end: last_sub&.end_date # Utile per debugging o messaggi UI
-    }
+    last_sub = subscriptions.kept.where(product: product).order(end_date: :desc).first
+    dates.merge(last_subscription_end: last_sub&.end_date)
   end
 end

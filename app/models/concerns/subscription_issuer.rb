@@ -26,51 +26,40 @@ module SubscriptionIssuer
 
     def require_active_membership_for_courses
       return if product.nil? || product.associative?
+      return unless subscription # Evita crash se sub non c'è
 
-      check_date = subscription&.start_date || sold_on || Date.current
+      # Usiamo la start_date effettiva della subscription
+      check_date = subscription.start_date
+
       unless member.membership_valid?(check_date)
-        errors.add(:base, "Impossibile vendere un corso istituzionale: Il socio non ha una Quota Associativa attiva per la data #{check_date.strftime('%d/%m/%Y')}.")
+        errors.add(:base, "Impossibile vendere #{product.name}: Il socio non avrà una Quota Associativa attiva il #{I18n.l(check_date)}.")
       end
     end
 
     def apply_smart_renewal_policy
       return unless subscription.present?
 
-      subscription.member  = member
+      subscription.member = member
       subscription.product = product
 
-      return if subscription.start_date.present?
-
-      last_sub = Subscription.kept
-                             .where(member: member, product: product)
-                             .where.not(id: subscription.id)
-                             .order(end_date: :desc)
-                             .first
-
-      target_start_date = sold_on || Date.current
-
-      if last_sub
-        continuity_date = last_sub.end_date + 1.day
-        gap_days = ((sold_on || Date.current) - continuity_date).to_i
-
-        if gap_days < 0
-          # CASO 1: Rinnovo Anticipato (Gap negativo, sono venuto prima della scadenza)
-          # Esempio: Scade il 31, vengo il 20. Gap = -11.
-          # Azione: Mantengo la continuità futura.
-          target_start_date = continuity_date
-
-        elsif gap_days <= RENEWAL_GRACE_PERIOD_DAYS
-          # CASO 2: Piccolo Buco (Punizione/Recupero)
-          # Esempio: Scaduto da 10 giorni. Gap = 10.
-          # Azione: Mantengo la continuità passata (pago il buco).
-          target_start_date = continuity_date
-        else
-          # CASO 3: Buco Enorme (Reset)
-          # Esempio: Scaduto da 6 mesi.
-          # Azione: Ignoro il passato, uso la data odierna (già impostata sopra come default).
+      # CASO 1: L'operatore ha forzato una data di inizio (MANUAL OVERRIDE)
+      if subscription.start_date.present?
+        # Se manca la fine, la calcoliamo basandoci sulla data manuale
+        if subscription.end_date.blank?
+          duration_result = Duration.new(product, subscription.start_date).calculate
+          subscription.end_date = duration_result[:end_date]
         end
+        # STOP! Non chiamare RenewalCalculator, l'umano ha deciso.
+        return
       end
 
-      subscription.start_date = target_start_date
+      # CASO 2: Nessuna data inserita -> AUTOMATISMO (Smart Renewal)
+      ref_date = sold_on || Date.current
+
+      # Qui chiamiamo il "Genio" che decide start e end
+      result = RenewalCalculator.new(member, product, ref_date).call
+
+      subscription.start_date = result[:start_date]
+      subscription.end_date   = result[:end_date]
     end
 end

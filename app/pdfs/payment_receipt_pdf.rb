@@ -10,8 +10,8 @@ class PaymentReceiptPdf < ApplicationPdf
     super()
     @sale = sale
     @member = sale.member
-    # Recuperiamo il nome prodotto. Adattalo se la tua struttura è diversa.
     @product_name = @sale.product&.name || "Servizio Palestra"
+    @gym_profile = GymProfile.current
 
     header_section
     recipient_section
@@ -23,34 +23,39 @@ class PaymentReceiptPdf < ApplicationPdf
     # --- DESTRA (Dati Ricevuta) ---
     float do
       bounding_box([ HEADER_RIGHT_X, cursor ], width: HEADER_RIGHT_WIDTH) do
-        # Usa l'ID se receipt_code non esiste ancora
         code = @sale.respond_to?(:receipt_code) ? @sale.receipt_code : "##{@sale.id}"
-        text "RICEVUTA N. #{code}", size: FONT_SIZE_L, style: :bold, align: :right, color: COLOR_ACCENT
 
+        text "RICEVUTA N. #{code}", size: FONT_SIZE_L, style: :bold, align: :right, color: COLOR_ACCENT
         text "Data: #{I18n.l(@sale.sold_on)}", size: FONT_SIZE_M, align: :right
         move_down GAP_XS
         text "Pagamento: #{@sale.payment_method.humanize}", size: FONT_SIZE_S, align: :right
       end
     end
 
-    # --- SINISTRA (Dati Palestra - con FALLBACK) ---
-    # Se GymProfile esiste usa quello, altrimenti usa stringhe statiche
-    gym_name = defined?(GymProfile) ? GymProfile.name : "NOME PALESTRA ASD"
-    gym_address = defined?(GymProfile) ? GymProfile.address_line_1 : "Via Esempio, 123 - Città"
-    gym_vat = defined?(GymProfile) ? GymProfile.vat_number : "00000000000"
-
+    # --- SINISTRA (Dati Palestra) ---
     span(HEADER_LEFT_WIDTH, position: :left) do
-      text gym_name, size: FONT_SIZE_XL, style: :bold, color: COLOR_PRIMARY
+      text @gym_profile.name, size: FONT_SIZE_XL, style: :bold, color: COLOR_PRIMARY
       text "Associazione Sportiva Dilettantistica", size: FONT_SIZE_S, color: COLOR_SECONDARY
 
       move_down GAP_S
-      text gym_address, size: FONT_SIZE_S, color: COLOR_PRIMARY
 
-      move_down 2
-      # text "Tel: ... | Email: ...", size: FONT_SIZE_S, color: COLOR_PRIMARY # Decommenta se vuoi
+      if @gym_profile.full_address.present?
+        text @gym_profile.full_address, size: FONT_SIZE_S, color: COLOR_PRIMARY
+        move_down 2
+      end
 
-      move_down 2
-      text "C.F./P.IVA: #{gym_vat}", size: FONT_SIZE_S, style: :bold, color: COLOR_PRIMARY
+      contacts = []
+      contacts << "Tel: #{@gym_profile.phone}" if @gym_profile.phone.present?
+      contacts << "Email: #{@gym_profile.email}" if @gym_profile.email.present?
+
+      if contacts.any?
+        text contacts.join("  |  "), size: FONT_SIZE_S, color: COLOR_PRIMARY
+        move_down 2
+      end
+
+      if @gym_profile.vat_number.present?
+        text "C.F./P.IVA: #{@gym_profile.vat_number}", size: FONT_SIZE_S, style: :bold, color: COLOR_PRIMARY
+      end
     end
 
     move_down GAP_M
@@ -79,7 +84,18 @@ class PaymentReceiptPdf < ApplicationPdf
     text "CAUSALE VERSAMENTO", size: FONT_SIZE_XS, style: :bold, color: COLOR_SECONDARY
     move_down GAP_XS
 
-    description = "Contributo: #{@product_name}"
+    prefix =
+      case @sale.receipt_sequence
+      when "associative"
+        "Quota Associativa"
+      when "institutional"
+        "Quota Istituzionale"
+      else
+        "Contributo"
+      end
+
+    description = "#{prefix}: #{@product_name}"
+    # --- FINE MODIFICA ---
 
     # Se è un abbonamento, mostriamo le date
     if @sale.subscription
@@ -88,7 +104,7 @@ class PaymentReceiptPdf < ApplicationPdf
 
     data = [
       [ "DESCRIZIONE", "IMPORTO" ],
-      [ description, format_currency(@sale.amount) ], # Attenzione: amount (o total_amount)
+      [ description, format_currency(@sale.amount) ],
       [ "TOTALE", format_currency(@sale.amount) ]
     ]
 
@@ -121,10 +137,15 @@ class PaymentReceiptPdf < ApplicationPdf
 
   def footer_legal_section
     footer_height = 60
+    iban_text = @gym_profile.bank_iban.present? ? "IBAN: #{@gym_profile.bank_iban}\n" : ""
+
     bounding_box([ bounds.left, bounds.bottom + footer_height ], width: bounds.width, height: footer_height) do
       text "NOTE FISCALI", size: FONT_SIZE_XS, style: :bold, color: COLOR_PRIMARY
       move_down 3
-      legal_text = "Operazione effettuata in conformità all'art. 148 del T.U.I.R. e art. 4 del D.P.R. 633/72.\nSomma versata a titolo di quota associativa o corrispettivo specifico."
+
+      legal_text = "#{iban_text}Operazione effettuata in conformità all'art. 148 del T.U.I.R. e art. 4 del D.P.R. 633/72.\n" \
+                   "Somma versata a titolo di quota associativa o corrispettivo specifico."
+
       text legal_text, size: FONT_SIZE_XS, color: COLOR_SECONDARY, align: :justify, leading: 1
     end
   end

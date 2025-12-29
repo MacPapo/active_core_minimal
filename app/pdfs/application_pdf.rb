@@ -37,7 +37,6 @@ class ApplicationPdf < Prawn::Document
   end
 
   def format_currency(amount)
-    # Rileva automaticamente se sono centesimi (Integer) o Euro (Decimal)
     val = amount.is_a?(Integer) ? amount / 100.0 : amount
     @view.number_to_currency(val, locale: :it)
   end

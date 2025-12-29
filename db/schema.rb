@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_26_140721) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_29_165659) do
   create_table "access_logs", force: :cascade do |t|
     t.integer "checkin_by_user_id", null: false
     t.datetime "created_at", null: false
@@ -61,6 +61,20 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_26_140721) do
     t.integer "user_id", null: false
     t.index ["status"], name: "index_feedbacks_on_status"
     t.index ["user_id"], name: "index_feedbacks_on_user_id"
+  end
+
+  create_table "gym_profiles", force: :cascade do |t|
+    t.string "address_line_1"
+    t.string "address_line_2"
+    t.string "bank_iban"
+    t.string "city"
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "name"
+    t.string "phone"
+    t.datetime "updated_at", null: false
+    t.string "vat_number"
+    t.string "zip_code"
   end
 
   create_table "members", force: :cascade do |t|

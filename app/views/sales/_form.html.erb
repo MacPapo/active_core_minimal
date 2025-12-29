@@ -26,9 +26,12 @@
             "
           >
             <div class="flex items-center gap-3">
-              <div class="avatar placeholder">
-                <div class="bg-primary text-primary-content rounded-full w-10">
-                  <span class="text-lg font-bold">
+              <div class="avatar avatar-placeholder">
+                <div
+                  class="rounded-full w-10"
+                  style="<%= sale.member.avatar_color_style %>"
+                >
+                  <span class="font-bold font-mono">
                     <%= sale.member.initials %>
                   </span>
                 </div>

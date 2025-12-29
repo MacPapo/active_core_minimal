@@ -57,15 +57,17 @@ class SalesController < ApplicationController
     end
 
     def setup_renewal_data
-      return unless @sale.member
+      return unless @sale.member && params[:renew_subscription_id]
 
       old_sub = @sale.member.subscriptions.find(params[:renew_subscription_id])
 
       @sale.product = old_sub.product
-      @sale.amount  = old_sub.product.price
+      @sale.amount  = old_sub.product.price || 0
 
-      suggested_start = [ old_sub.end_date + 1.day, Date.current ].max
-      @sale.subscription.start_date = suggested_start
+      dates = RenewalCalculator.new(@sale.member, @sale.product, Date.current).call
+
+      @sale.subscription.start_date = dates[:start_date]
+      @sale.subscription.end_date   = dates[:end_date]
     end
 
     def sale_params
