@@ -1,7 +1,7 @@
 <tr id="<%= dom_id(product) %>_row">
   <%# NOME %>
   <td class="pl-6 font-bold text-lg">
-    <%= link_to product.name, product, class: "hover:underline decoration-primary decoration-2 underline-offset-2" %>
+    <%= link_to product.name, product, class: "font-bold text-base-content hover:text-primary transition-colors truncate" %>
   </td>
 
   <%# DISCIPLINE %>
@@ -43,6 +43,12 @@
   <%# AZIONI %>
   <td class="text-right w-1 pr-4 align-middle">
     <div class="join">
+      <%= link_to [product],
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { tip: "Dettagli" } do %>
+        <%= icon("view", size: 16) %>
+      <% end %>
+
       <%= link_to [:edit, product],
 		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
 		  data: { tip: "Modifica", turbo_frame: "modal" } do %>

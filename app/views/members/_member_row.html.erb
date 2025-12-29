@@ -1,5 +1,3 @@
-<%# app/views/members/_member.html.erb %>
-
 <% cache [member, member.subscriptions.maximum(:updated_at), Date.current] do %>
   <tr id="<%= dom_id(member) %>_row">
     <%# 1. AVATAR & ANAGRAFICA (Rimane uguale) %>

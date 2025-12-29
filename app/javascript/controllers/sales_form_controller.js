@@ -8,53 +8,26 @@ export default class extends Controller {
 
 	connect() {
 		this.updateTotalDisplay()
+
+		if (this.hasMemberSelectTarget && this.memberSelectTarget.value &&
+			this.hasProductSelectTarget && this.productSelectTarget.value) {
+
+			this.refreshData()
+		}
 	}
 
-	// Chiamata quando cambia Socio o Prodotto (Select)
-	refreshData() {
+	refreshData(event) {
+		// Se non ho selezionato nulla, esco
+		if (!this.productSelectTarget.value || !this.memberSelectTarget.value) return;
+
 		this.updatePrice()
-		this.fetchRenewalDates() // Chiama il server per la "prima proposta"
+		this.fetchRenewalDates(event)
 	}
 
-	// Chiamata quando l'utente cambia manualmente la data (Input)
-	recalculateEndDate() {
-		const startDateVal = this.startDateInputTarget.value
-		const selectedOption = this.productSelectTarget.selectedOptions[0]
-
-		// Se non c'è data o prodotto, usciamo
-		if (!startDateVal || !selectedOption) return
-
-		// 1. Aggiorniamo subito il display della data inizio
-		if (this.hasStartDateDisplayTarget) {
-			this.startDateDisplayTarget.textContent = this.formatDateIT(startDateVal)
-		}
-
-		// 2. Calcoliamo la fine basandoci sulla durata (Client side, niente server!)
-		const durationDays = parseInt(selectedOption.dataset.duration)
-
-		if (!isNaN(durationDays) && durationDays > 0) {
-			const startDate = new Date(startDateVal)
-			// Logica: Data Fine = Inizio + Durata - 1 giorno
-			// (Es. Inizio 1 Gen, Durata 30gg -> Fine 30 Gen, non 31)
-			const endDate = new Date(startDate)
-			endDate.setDate(startDate.getDate() + durationDays - 1)
-
-			// Aggiorniamo il display scadenza
-			if (this.hasEndDateDisplayTarget) {
-				// Convertiamo in YYYY-MM-DD per passarlo al formattatore
-				const endString = endDate.toISOString().split('T')[0]
-				this.endDateDisplayTarget.textContent = this.formatDateIT(endString)
-			}
-
-			this.statusDisplayTarget.textContent = "Data modificata manualmente"
-			this.statusDisplayTarget.className = "text-center text-xs text-warning font-bold"
-		}
-	}
-
-	// --- LE ALTRE FUNZIONI (Price, Total) RIMANGONO UGUALI ---
 	updatePrice() {
 		const selectedOption = this.productSelectTarget.selectedOptions[0]
 		if (!selectedOption) return
+
 		const price = selectedOption.dataset.price
 		if (price) {
 			this.amountInputTarget.value = parseFloat(price).toFixed(2).replace('.', ',')
@@ -68,33 +41,67 @@ export default class extends Controller {
 		this.totalDisplayTarget.textContent = isNaN(number) ? "0,00" : number.toFixed(2).replace('.', ',')
 	}
 
-	// --- FETCH DAL SERVER (Rimane uguale, setta la proposta iniziale) ---
-	async fetchRenewalDates() {
+	async fetchRenewalDates(event) {
 		const memberId = this.memberSelectTarget.value
 		const productId = this.productSelectTarget.value
 
+		// La data che TU hai scritto a mano
+		const currentInputVal = this.startDateInputTarget.value
+
 		if (!memberId || !productId) return
 
+		// Capiamo se sei stato TU a scatenare l'evento modificando la data
+		const userChangedDate = (event && event.target === this.startDateInputTarget)
+
 		this.statusDisplayTarget.textContent = "Calcolo..."
-		const url = `/members/${memberId}/renewal_info?product_id=${productId}`
+		this.statusDisplayTarget.className = "text-center text-xs opacity-50 italic"
+
+		let url = `/members/${memberId}/renewal_info?product_id=${productId}`
+
+		// Inviamo sempre la tua data corrente come riferimento
+		if (currentInputVal) {
+			url += `&ref_date=${currentInputVal}`
+		}
 
 		try {
 			const response = await fetch(url, { headers: { "Accept": "application/json" } })
 			if (response.ok) {
 				const data = await response.json()
 
-				// Aggiorna Input
-				if (this.hasStartDateInputTarget && data.start_date) {
-					this.startDateInputTarget.value = data.start_date
-				}
-				// Aggiorna Display
-				if (this.hasStartDateDisplayTarget) this.startDateDisplayTarget.textContent = this.formatDateIT(data.start_date)
-				if (this.hasEndDateDisplayTarget) this.endDateDisplayTarget.textContent = this.formatDateIT(data.end_date)
+				// --- ZONA FIX ---
 
-				this.statusDisplayTarget.textContent = "Periodo calcolato automaticamente"
-				this.statusDisplayTarget.className = "text-center text-xs opacity-50 italic text-success"
+				if (userChangedDate) {
+					// 🛑 STOP! L'hai cambiata tu. 
+					// IGNORIAMO data.start_date del server.
+					// Non tocchiamo this.startDateInputTarget.value
+
+					// Aggiorniamo solo il display testuale per coerenza visiva
+					if (this.hasStartDateDisplayTarget) {
+						this.startDateDisplayTarget.textContent = this.formatDateIT(currentInputVal)
+					}
+				} else {
+					// ✅ OK. Hai cambiato prodotto o socio.
+					// Qui accettiamo il suggerimento del server.
+					if (this.hasStartDateInputTarget && data.start_date) {
+						this.startDateInputTarget.value = data.start_date
+					}
+					if (this.hasStartDateDisplayTarget) {
+						this.startDateDisplayTarget.textContent = this.formatDateIT(data.start_date)
+					}
+				}
+
+				// La data di FINE invece ci serve sempre dal server (perché calcola la durata)
+				if (this.hasEndDateDisplayTarget) {
+					this.endDateDisplayTarget.textContent = this.formatDateIT(data.end_date)
+				}
+
+				this.statusDisplayTarget.textContent = "Aggiornato"
+				this.statusDisplayTarget.className = "text-center text-xs text-success font-bold"
 			}
-		} catch (e) { console.error(e) }
+		} catch (e) {
+			console.error(e)
+			this.statusDisplayTarget.textContent = "Errore"
+		}
 	}
 
 	formatDateIT(dateString) {

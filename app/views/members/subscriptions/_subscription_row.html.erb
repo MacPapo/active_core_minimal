@@ -73,17 +73,19 @@
     <% end %>
   </td>
 
-  <td>
-    <% if subscription.end_date >= 7.days.ago.to_date %>
-      <%= link_to subscription_path(subscription),
-		  class: "btn btn-ghost btn-xs text-error hover:bg-error/10 tooltip",
-		  title: "Annulla Abbonamento e Vendita",
-		  data: { 
-		    turbo_method: :delete, 
-		    turbo_confirm: "SEI SICURO?\n\nEliminando l'abbonamento verrà annullata anche la VENDITA (incasso) di #{format_money(subscription.sale&.amount)}.\n\nContinuare?" 
-		  } do %>
-        <%= icon("delete", size: 16) %>
+  <td class="text-right w-1 pr-4 align-middle">
+    <div class="join">
+      <% if subscription.end_date >= 7.days.ago.to_date %>
+        <%= link_to [subscription],
+		    class: "join-item text-error btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		    data: { 
+		      tip: "Archivia",
+		      turbo_method: :delete, 
+		      turbo_confirm: "SEI SICURO?\n\nEliminando l'abbonamento verrà annullata anche la VENDITA (incasso) di #{format_money(subscription.sale&.amount)}.\n\nContinuare?" 
+		    } do %>
+          <%= icon("delete", size: 16) %>
+        <% end %>
       <% end %>
-    <% end %>
+    </div>
   </td>
 </tr>

@@ -46,21 +46,25 @@
     <%= format_money(sale.amount) %>
   </td>
 
-  <td class="text-right w-[10%] pr-4 align-middle">
-    <%= link_to [sale], class: "btn btn-square btn-xs btn-ghost", title: "Dettaglio" do %>
-      <%= icon("view", size: 16) %>
-    <% end %>
-
-    <% if sale.created_at > 24.hours.ago %>
-      <%= link_to sale_path(sale),
-		  class: "btn btn-square btn-xs btn-ghost text-error hover:bg-error/10",
-		  title: "Annulla Vendita",
-		  data: {
-		    turbo_method: :delete,
-		    turbo_confirm: "Sei sicuro di voler annullare questa VENDITA?\n\nVerra annullato anche l'eventuale abbonamento associato.\n\nL'operazione è irreversibile."
-		  } do %>
-        <%= icon("trash_2", size: 16) %>
+  <td class="text-right w-1 pr-4 align-middle">
+    <div class="join">
+      <%= link_to [sale],
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { tip: "Dettaglio" } do %>
+        <%= icon("view", size: 16) %>
       <% end %>
-    <% end %>
+
+      <% if sale.created_at > 24.hours.ago %>
+        <%= link_to [sale],
+		    class: "join-item text-error btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		    data: {
+		      tip: "Archivia",
+		      turbo_method: :delete,
+		      turbo_confirm: "Sei sicuro di voler annullare questa VENDITA?\n\nVerra annullato anche l'eventuale abbonamento associato.\n\nL'operazione è irreversibile."
+		    } do %>
+          <%= icon("delete", size: 16) %>
+        <% end %>
+      <% end %>
+    </div>
   </td>
 </tr>

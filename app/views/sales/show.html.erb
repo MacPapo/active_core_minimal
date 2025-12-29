@@ -1,99 +1,235 @@
-<div class="container mx-auto max-w-2xl p-6">
-  <div class="flex justify-between items-center mb-6">
-    <%= link_to :back, class: "btn btn-ghost btn-sm gap-1 pl-0 opacity-60 hover:opacity-100" do %>
-      <%= icon("arrow_back", size: 16) %>
-      Indietro
-    <% end %>
+<%# app/views/sales/show.html.erb %>
 
-    <div class="flex gap-2">
-      <%= link_to sale_path(@sale, format: :pdf), class: "btn btn-primary btn-sm gap-2", target: "_blank" do %>
-        <%= icon("print", size: 16) %>
-        Stampa PDF
-      <% end %>
-    </div>
-  </div>
-
-  <%# EFFETTO FOGLIO DI CARTA %>
-  <div class="card bg-base-100 shadow-2xl border border-base-200 rounded-none relative">
-    <%# Zig-zag effect (Opzionale CSS puro, qui semplificato con border) %>
-    <div class="border-t-8 border-primary w-full absolute top-0"></div>
-
-    <div class="card-body p-8 sm:p-12 text-center">
-      <%# HEADER RICEVUTA %>
-      <div class="mb-8">
-        <h2
-          class="
-            text-3xl font-bold font-mono uppercase tracking-widest
-            text-base-content
-          "
-        >
-          Ricevuta
-        </h2>
-
-        <div class="text-sm opacity-50 font-mono mt-1">
-          #<%= @sale.receipt_code.presence || "PENDING" %>
-        </div>
-
-        <div class="text-sm opacity-50 font-mono">
-          del <%= l(@sale.sold_on) %>
-        </div>
-      </div>
-
-      <%# DETTAGLI TRANSAZIONE %>
-      <div
-        class="
-          grid grid-cols-2 gap-8 text-left border-t border-b border-dashed
-          border-base-content/20 py-8 my-4
-        "
-      >
-        <div>
-          <div class="text-xs uppercase font-bold opacity-40">Emessa per</div>
-
-          <div class="font-bold text-lg"><%= @sale.member.full_name %></div>
-
-          <div class="font-mono text-sm opacity-70">
-            <%= @sale.member.fiscal_code %>
-          </div>
-        </div>
-
-        <div class="text-right">
-          <div class="text-xs uppercase font-bold opacity-40">Emessa da</div>
-
-          <div class="font-medium"><%= current_user.full_name %></div>
-
-          <div class="font-mono text-sm opacity-70">ActiveCore Gym</div>
-        </div>
-
-        <div class="col-span-2">
-          <div class="text-xs uppercase font-bold opacity-40 mb-1">
-            Descrizione
+<%= render layout: "sales/shell", locals: { sale: @sale } do %>
+  <div class="space-y-6">
+    <%# --- 1. RIGA DEI TOTALI (KPI) --- %>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <%# Card 1: IMPORTO %>
+      <div class="stats shadow-sm border border-base-200 bg-base-100 overflow-visible">
+        <div class="stat">
+          <div class="stat-figure text-primary">
+            <div class="p-3 bg-primary/10 rounded-full text-primary">
+              <%= icon("euro_symbol", size: 24) %>
+            </div>
           </div>
 
-          <div class="flex justify-between items-baseline">
-            <span class="text-xl font-medium"><%= @sale.product_name_snapshot %></span>
-            <span class="font-mono text-xl"><%= format_money(@sale.amount) %></span>
-          </div>
+          <div class="stat-title">Importo Transazione</div>
 
-          <% if @sale.notes.present? %>
-            <p class="text-sm opacity-60 mt-1 italic"><%= @sale.notes %></p>
-          <% end %>
-        </div>
-      </div>
-
-      <%# TOTALE %>
-      <div class="flex justify-between items-end mt-4">
-        <div class="text-left">
-          <div class="badge badge-outline text-xs uppercase font-bold">
-            <%= @sale.payment_method.humanize %>
-          </div>
-        </div>
-        <div class="text-right">
-          <div class="text-xs uppercase font-bold opacity-40">Totale</div>
-          <div class="text-4xl font-bold font-mono text-primary">
+          <div class="stat-value text-primary font-mono tracking-tight">
             <%= format_money(@sale.amount) %>
           </div>
+
+          <div class="stat-desc">
+            <% if @sale.discarded? %>
+              <span class="text-error font-bold flex items-center gap-1">
+                <%= icon("close", size: 14) %> ANNULLATO
+              </span>
+            <% else %>
+              <span class="text-success flex items-center gap-1">
+                <%= icon("success", size: 14) %> Pagamento Confermato
+              </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# Card 2: METODO PAGAMENTO %>
+      <div class="stats shadow-sm border border-base-200 bg-base-100">
+        <div class="stat">
+          <div class="stat-figure text-secondary opacity-50">
+            <% case @sale.payment_method %>
+            <% when 'cash' %>
+              <%= icon("payments", size: 32) %>
+            <% when 'credit_card' %>
+              <%= icon("credit_card", size: 32) %>
+            <% when 'bank_transfer' %>
+              <%= icon("account_balance", size: 32) %>
+            <% else %>
+              <%= icon("paid", size: 32) %>
+            <% end %>
+          </div>
+
+          <div class="stat-title">Metodo Pagamento</div>
+
+          <div class="stat-value text-xl capitalize">
+            <%= display_value(@sale.payment_method.humanize) %>
+          </div>
+
+          <div class="stat-desc">Registrato a sistema</div>
+        </div>
+      </div>
+
+      <%# Card 3: RIFERIMENTO FISCALE %>
+      <div class="stats shadow-sm border border-base-200 bg-base-100">
+        <div class="stat">
+          <div class="stat-figure opacity-20">
+            <%= icon("receipt", size: 32) %>
+          </div>
+
+          <div class="stat-title">Codice Ricevuta</div>
+
+          <div class="stat-value text-lg font-mono">
+            <%= display_value(@sale.receipt_code, placeholder: "N/A") %>
+          </div>
+
+          <div class="stat-desc text-xs">
+            Anno <%= display_value(@sale.receipt_year) %> - Seq.
+            <%= display_value(@sale.receipt_sequence) %>
+          </div>
         </div>
       </div>
     </div>
+
+    <%# --- 2. DETTAGLI (Layout 2/3 + 1/3) --- %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <%# COLONNA SINISTRA: OGGETTO DELLA VENDITA %>
+      <div class="lg:col-span-2 space-y-6">
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+          <div class="card-body">
+            <h3 class="font-bold text-lg opacity-70 mb-4 flex items-center gap-2">
+              <%= icon("bag", size: 20) %> Oggetto della Vendita
+            </h3>
+
+            <%# Box Prodotto %>
+            <div
+              class="
+                p-4 bg-base-200/30 rounded-xl border border-base-200 flex
+                justify-between items-start
+              "
+            >
+              <div>
+                <div class="font-bold text-xl mb-1">
+                  <%= display_value(@sale.product_name_snapshot) %>
+                </div>
+
+                <div class="text-sm opacity-60">
+                  Venduto il <%= format_date(@sale.sold_on, format: :long) %>
+                </div>
+              </div>
+
+              <%# Link al prodotto originale (se esiste ancora) %>
+              <%= link_to [@sale.product], class: "btn btn-xs btn-ghost gap-1 opacity-50 hover:opacity-100" do %>
+                Vedi Prodotto Originale <%= icon("arrow_right", size: 12) %>
+              <% end %>
+            </div>
+
+            <%# Note %>
+            <div class="mt-4">
+              <div class="text-xs uppercase font-bold opacity-40 mb-2">
+                Note Transazione
+              </div>
+
+              <% if @sale.notes.present? %>
+                <div
+                  class="
+                    p-3 bg-warning/10 text-warning-content rounded-lg
+                    text-sm border border-warning/20
+                  "
+                >
+                  <%= icon("sticky_note_2", size: 16, class: "float-left mr-2 mt-0.5") %>
+                  <%= @sale.notes %>
+                </div>
+              <% else %>
+                <span class="text-sm opacity-40 italic">
+                  Nessuna nota aggiuntiva.
+                </span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%# COLONNA DESTRA: SOGGETTI (CHI E CHI) %>
+      <div class="space-y-6">
+        <%# BOX SOCIO %>
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+          <div class="card-body p-5">
+            <h3 class="font-bold text-xs uppercase opacity-50 tracking-wider mb-3">
+              Cliente
+            </h3>
+
+            <div class="flex items-center gap-3">
+              <div class="avatar avatar-placeholder">
+                <div
+                  class="rounded-full w-24 sm:w-14"
+                  style="<%= @sale.member.avatar_color_style %>"
+                >
+                  <span class="font-bold font-mono text-3xl sm:text-lg">
+                    <%= @sale.member.initials %>
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <div class="font-bold hover:text-primary transition-colors">
+                  <%= link_to @sale.member.full_name, member_path(@sale.member) %>
+                </div>
+
+                <div class="text-xs font-mono opacity-60">
+                  <%= @sale.member.fiscal_code %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <%# BOX OPERATORE %>
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+          <div class="card-body p-5">
+            <h3 class="font-bold text-xs uppercase opacity-50 tracking-wider mb-3">
+              Registrato Da
+            </h3>
+
+            <div class="flex items-center gap-3">
+              <div class="avatar avatar-placeholder">
+                <div
+                  class="rounded-full w-24 sm:w-14"
+                  style="<%= @sale.user.avatar_color_style %>"
+                >
+                  <span class="font-bold font-mono text-3xl sm:text-lg">
+                    <%= @sale.user.initials %>
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <div class="font-bold text-sm">
+                  <%= display_value(@sale.user.full_name) %>
+                </div>
+
+                <div class="text-xs opacity-50">Staff ActiveCore</div>
+              </div>
+            </div>
+
+            <div class="divider my-2"></div>
+
+            <div class="text-xs opacity-50 flex justify-between">
+              <span>Creato il:</span>
+
+              <span class="font-mono">
+                <%= l(@sale.created_at, format: :short) %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# --- ALERT DI STORNO (Solo se stornata) --- %>
+    <% if @sale.discarded? %>
+      <div class="alert alert-error shadow-sm mt-6">
+        <%= icon("warning", size: 24) %>
+
+        <div>
+          <h3 class="font-bold">Attenzione: Transazione Annullata</h3>
+
+          <div class="text-xs">
+            Questa vendita è stata stornata il
+            <%= l(@sale.discarded_at, format: :short) %>. Non è valida ai fini
+            contabili e non dovrebbe generare accessi.
+          </div>
+        </div>
+      </div>
+    <% end %>
   </div>
-</div>
+<% end %>

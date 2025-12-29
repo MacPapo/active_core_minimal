@@ -24,5 +24,7 @@
       <%= icon("spa", size: size) %>
       <%= t("sidebar.items.disciplines", default: "Discipline") %>
     <% end %>
+
+    <%= yield :discipline_actions if content_for?(:discipline_actions) %>
   </li>
 </ul>

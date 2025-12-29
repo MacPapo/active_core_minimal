@@ -61,6 +61,8 @@
             <%= icon("spa", size: size) %>
             <%= t("sidebar.items.disciplines", default: "Discipline") %>
           <% end %>
+
+          <%= yield :discipline_actions if content_for?(:discipline_actions) %>
         </li>
       </ul>
     </details>
@@ -86,7 +88,7 @@
         <li>
           <%= active_link_to reports_path(:daily_cash), class: "group" do %>
             <%= icon("sale", size: size) %>
-            <%= t("sidebar.items.daily_cash", default: "Chiusura Cassa") %>
+            <%= t("sidebar.items.daily_cash", default: "Reportistica") %>
           <% end %>
         </li>
       </ul>

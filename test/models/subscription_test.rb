@@ -11,10 +11,11 @@ class SubscriptionTest < ActiveSupport::TestCase
     grant_membership_to(@member)
 
     @prod_inst = products(:yoga_monthly)
+    # Institutional -> Forza allineamento al mese solare
     @prod_inst.update!(duration_days: 30, accounting_category: "institutional")
   end
 
-  test "automatically calculates dates based on sale date (Standard Flow)" do
+  test "automatically calculates dates based on sale date (Institutional Snap)" do
     # Scenario: Vendita fatta il 20 Gennaio
     sale_date = Date.new(2025, 1, 20)
 
@@ -26,28 +27,25 @@ class SubscriptionTest < ActiveSupport::TestCase
       subscription_attributes: { member: @member, product: @prod_inst }
     )
 
-    # Recuperiamo la subscription generata automaticamente
     sub = sale.subscription
 
-    # Verifica Inizio: DEVE essere la data di vendita (20 Gen)
-    assert_equal Date.new(2025, 1, 20), sub.start_date
+    # CORREZIONE: Essendo istituzionale, il 20 Gennaio diventa 1° Gennaio
+    assert_equal Date.new(2025, 1, 1), sub.start_date
 
-    # Verifica Fine: 1 mese dopo (-1 giorno)
-    expected_end = Date.new(2025, 1, 20).advance(months: 1).yesterday
-    assert_equal expected_end, sub.end_date
+    # CORREZIONE: La fine è fine mese
+    assert_equal Date.new(2025, 1, 31), sub.end_date
   end
 
   test "respects user preference for future start date" do
-    # Oggi è 20 Gennaio, ma l'utente vuole iniziare il 1° Febbraio
+    # Scenario: Oggi 20 Gennaio, ma voglio iniziare a Febbraio
     sale_date = Date.new(2025, 1, 20)
-    future_start = Date.new(2025, 2, 1)
+    future_start = Date.new(2025, 2, 1) # Già primo del mese
 
     sale = Sale.create!(
       member: @member, product: @prod_inst, user: @staff,
       sold_on: sale_date, payment_method: :cash
     )
 
-    # Passiamo start_date esplicita -> Duration la userà come preference_date
     sub = Subscription.create!(
       member: @member, product: @prod_inst, sale: sale,
       start_date: future_start
@@ -56,7 +54,6 @@ class SubscriptionTest < ActiveSupport::TestCase
     assert_equal Date.new(2025, 2, 1), sub.start_date
     assert_equal Date.new(2025, 2, 28), sub.end_date
 
-    # Oggi non attivo, futuro sì
     assert_not sub.active?(sale_date)
     assert sub.active?(future_start)
   end

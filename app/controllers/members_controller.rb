@@ -16,8 +16,12 @@ class MembersController < ApplicationController
     @member = Member.find(params[:id])
     product = Product.find_by(id: params[:product_id])
 
+    is_manual_input = params[:ref_date].present?
+
+    reference_date = is_manual_input ? Date.parse(params[:ref_date]) : Date.current
+
     if product
-      info = @member.renewal_info_for(product)
+      info = RenewalCalculator.new(@member, product, reference_date, manual_override: is_manual_input).call
       render json: info
     else
       render json: {}, status: :bad_request

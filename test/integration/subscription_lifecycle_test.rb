@@ -6,55 +6,69 @@ class SubscriptionLifecycleTest < ActiveSupport::TestCase
     @user = users(:staff)
 
     @monthly_course = products(:yoga_monthly)
+    # FONDAMENTALE: Assicuriamo che il prodotto sia istituzionale per attivare lo "Snap"
+    @monthly_course.update!(duration_days: 30, accounting_category: "institutional")
+
     @membership_annual = products(:annual_membership)
 
     grant_membership_to(@member)
   end
 
   test "Full Chain: Sale -> Issuer -> Subscription -> Duration -> SportYear" do
-    # 1. SETUP: Simuliamo un rinnovo intelligente
-    # Alice aveva un abbonamento scaduto ieri.
-    yesterday = Date.yesterday
+    # 1. SETUP: Simuliamo un rinnovo intelligente.
+    # Usiamo date relative al mese per evitare bug se il test gira il 1° del mese.
 
-    # Creiamo il passato manualmente
+    # Mese Scorso: 1° -> Fine Mese
+    last_month_start = Date.current.prev_month.beginning_of_month
+    last_month_end   = Date.current.prev_month.end_of_month
+
+    # Creiamo il passato (Un abbonamento istituzionale perfetto)
     Subscription.create!(
       member: @member,
       product: @monthly_course,
-      sale: Sale.create!(member: @member, user: @user, product: @monthly_course, sold_on: yesterday - 30.days),
-      start_date: yesterday - 30.days,
-      end_date: yesterday
+      sale: Sale.create!(member: @member, user: @user, product: @monthly_course, sold_on: last_month_start),
+      start_date: last_month_start,
+      end_date: last_month_end
     )
 
     # 2. AZIONE: Vendita oggi (sold_on: Today)
+    # Supponiamo di essere il 10 del mese corrente.
+    # La logica deve capire che è un rinnovo del mese scorso.
     sale = Sale.create!(
       member: @member,
       user: @user,
       product: @monthly_course,
-      sold_on: Date.today,
+      sold_on: Date.current,
       payment_method: :cash,
       subscription_attributes: { member: @member, product: @monthly_course }
     )
 
     # 3. VERIFICHE A CASCATA
 
-    # A. SubscriptionIssuer ha lavorato?
-    # La data inizio deve essere OGGI (Today), perché ieri scadeva. Continuità perfetta.
-    expected_start = Date.today
-    assert_equal expected_start, sale.subscription.start_date, "Smart Renewal failed: Start date should be today"
+    # A. SubscriptionIssuer & Duration (Logic Snap)
+    # Poiché è un rinnovo continuo di un istituzionale, deve iniziare il 1° di QUESTO mese.
+    expected_start = Date.current.beginning_of_month
+
+    assert_equal expected_start, sale.subscription.start_date,
+      "Smart Renewal failed: Should snap start date to beginning of current month (#{expected_start})"
 
     # B. Duration ha lavorato?
-    # La data fine deve essere tra 1 mese (-1 giorno) perché è un mensile
-    # Nota: duration_days è 30, quindi la logica institutional usa advance(months: 1).yesterday
-    expected_end = expected_start.advance(months: 1).yesterday
-    assert_equal expected_end, sale.subscription.end_date, "Duration calculation failed: End date incorrect"
+    # La data fine deve essere la fine di QUESTO mese.
+    expected_end = Date.current.end_of_month
+
+    assert_equal expected_end, sale.subscription.end_date,
+      "Duration calculation failed: Should end at the end of the month (#{expected_end})"
   end
 
-  test "The August 31st Wall (SportYear interaction)" do
-    # Simuliamo una vendita fatta il 15 Agosto per un mensile
-    # Deve finire il 31 Agosto, non il 14 Settembre.
+  test "The August 31st Wall (Institutional Snap)" do
+    # Simuliamo una vendita fatta il 15 Agosto per un mensile.
+    # NUOVA LOGICA: Poiché è istituzionale, anche se arrivi il 15,
+    # l'abbonamento viene "snappato" al 1° Agosto per coprire la mensilità contabile.
 
     # Usiamo un anno sicuro (es. 2025)
     august_15 = Date.new(2025, 8, 15)
+    august_01 = Date.new(2025, 8, 1)   # Start atteso (Snap)
+    august_31 = Date.new(2025, 8, 31)  # End atteso (Wall)
 
     sale = Sale.create!(
       member: @member,
@@ -64,13 +78,13 @@ class SubscriptionLifecycleTest < ActiveSupport::TestCase
       subscription_attributes: { member: @member, product: @monthly_course }
     )
 
-    # Verifica Inizio
-    assert_equal august_15, sale.subscription.start_date
+    # Verifica Inizio (FIXED: Ora ci aspettiamo il 1° del mese)
+    assert_equal august_01, sale.subscription.start_date,
+      "Institutional Snap failed: Start date should be snapped to Aug 1st"
 
     # Verifica Fine (Muro SportYear)
-    limit_date = Date.new(2025, 8, 31)
-
-    assert_equal limit_date, sale.subscription.end_date, "SportYear wall failed: Should end on Aug 31st"
+    assert_equal august_31, sale.subscription.end_date,
+      "SportYear wall failed: Should end on Aug 31st"
   end
 
   test "Membership Guard: Cannot buy course without active membership" do
