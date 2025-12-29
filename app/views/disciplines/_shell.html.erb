@@ -17,6 +17,13 @@
             <%= t("disciplines.sidebar.details", default: "Panoramica") %>
           <% end %>
         </li>
+
+        <li>
+          <%= active_link_to discipline_members_path(discipline), active: :exclusive do %>
+            <%= icon("badge", size: 18) %>
+            <%= t("disciplines.sidebar.members", default: "Registro Iscritti") %>
+          <% end %>
+        </li>
       </ul>
     </li>
   </ul>

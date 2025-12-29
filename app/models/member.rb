@@ -1,5 +1,5 @@
 class Member < ApplicationRecord
-  include SoftDeletable, Personable, HasAddress, Avatarable
+  include Filterable, SoftDeletable, Personable, HasAddress, Avatarable
 
   normalizes :fiscal_code, with: ->(c) { c.strip.upcase }
 
@@ -66,4 +66,48 @@ class Member < ApplicationRecord
     last_sub = subscriptions.kept.where(product: product).order(end_date: :desc).first
     dates.merge(last_subscription_end: last_sub&.end_date)
   end
+
+  def self.available_filters
+    [
+      { key: :query, label: "Cerca (Nome, CF, Email)" },
+      {
+        key: :med_cert,
+        label: "Certificato Medico",
+        options: [
+          [ "Valido", "valid" ],
+          [ "Scaduto", "expired" ],
+          [ "Mancante", "missing" ]
+        ]
+      },
+      {
+        key: :state,
+        label: "Archivio",
+        options: [
+          [ "Attivi", "active" ],
+          [ "Archiviati", "archived" ]
+        ]
+      }
+    ]
+  end
+
+  scope :search_by_text, ->(text) {
+    term = "%#{text.strip}%"
+    where(
+      "full_name LIKE :term OR fiscal_code LIKE :upcase_term OR email_address LIKE :term",
+      term: term,
+      upcase_term: term.upcase
+    )
+  }
+
+  scope :filter_by_med_cert, ->(val) {
+    case val
+    when "valid"   then where("medical_certificate_expiry >= ?", Date.current)
+    when "expired" then where("medical_certificate_expiry < ?", Date.current)
+    when "missing" then where(medical_certificate_expiry: nil)
+    end
+  }
+
+  scope :filter_by_state, ->(val) {
+    val == "archived" ? discarded : kept
+  }
 end

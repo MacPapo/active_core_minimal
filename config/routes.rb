@@ -25,7 +25,9 @@ Rails.application.routes.draw do
   # ============================================================================
   # 3. CATALOGO (Catalog)
   # ============================================================================
-  resources :disciplines
+  resources :disciplines do
+    resources :members, only: [:index], module: :disciplines
+  end
   resources :products
 
   # ============================================================================

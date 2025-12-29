@@ -84,13 +84,6 @@
 
           <%= yield :sale_actions if content_for?(:sale_actions) %>
         </li>
-
-        <li>
-          <%= active_link_to reports_path(:daily_cash), class: "group" do %>
-            <%= icon("sale", size: size) %>
-            <%= t("sidebar.items.daily_cash", default: "Reportistica") %>
-          <% end %>
-        </li>
       </ul>
     </details>
   </li>

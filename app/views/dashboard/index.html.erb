@@ -17,9 +17,13 @@
       </p>
     </div>
 
-    <%# SEARCH BAR %>
+    <%# SEARCH BAR "SMART" %>
     <div class="w-full md:w-1/3">
-      <%= form_with url: members_path, method: :get, class: "join w-full shadow-sm" do |f| %>
+      <%= form_with scope: :query, 
+                    url: members_path, 
+                    method: :get, 
+                    class: "join w-full shadow-sm",
+                    data: { turbo: false } do |f| %>
         <div class="relative w-full">
           <div
             class="
@@ -31,9 +35,9 @@
           </div>
 
           <%= f.text_field :query, 
-              class: "input input-bordered w-full pl-10 join-item focus:outline-offset-0", 
-              placeholder: "Cerca socio...",
-              autofocus: true %>
+          class: "input input-bordered w-full pl-10 join-item focus:outline-offset-0", 
+            placeholder: "Cerca socio (Nome, CF, Email)...",
+           autofocus: true %>
         </div>
 
         <%= button_tag type: "submit", class: "btn btn-primary join-item" do %>

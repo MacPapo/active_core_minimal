@@ -2,9 +2,17 @@ class MembersController < ApplicationController
   before_action :set_member, only: [ :edit, :update, :destroy ]
 
   def index
-    @members = Member.kept
-                     .includes(subscriptions: :product)
-                     .order(:last_name, :first_name)
+    @filters = Member.available_filters
+    permitted_keys = Member.allowed_filter_keys
+    filter_params = params.fetch(:query, {}).permit(*permitted_keys)
+
+    @keys = permitted_keys
+    base_scope = Member.includes(subscriptions: :product).order(:last_name, :first_name)
+
+    filtered_scope = base_scope.apply_filters(filter_params)
+    filtered_scope = filtered_scope.kept if filter_params[:state].blank?
+
+    @members = filtered_scope
   end
 
   def show

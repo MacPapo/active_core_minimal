@@ -9,4 +9,12 @@ class Discipline < ApplicationRecord
   validates :name, presence: true, uniqueness: { conditions: -> { kept } }
 
   broadcasts_refreshes
+
+  def recent_subscriptions
+    Subscription.kept
+      .where(product_id: product_ids)
+      .where("end_date >= ?", 30.days.ago)
+      .includes(:member, :product)
+      .order(end_date: :asc)
+  end
 end

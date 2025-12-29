@@ -13,7 +13,46 @@
   <% end %>
 <% end %>
 
-<!-- TODO filters -->
+<% content_for :page_search_and_filters do %>
+  <%= form_with scope: :query, 
+    url: [:members], 
+    method: :get, 
+    html: {
+      autocomplete: "off",
+      id: "filter-form",
+      data: { controller: "search-form" }
+    } do |form| %>
+    <div class="flex flex-col sm:flex-row items-stretch gap-2 w-full mb-6">
+      <%= render "shared/filter/search",
+		 form: form, 
+		 placeholder: "Cerca Mario, Luigi..." %>
+
+      <%= render "shared/filter/trigger" %>
+    </div>
+
+    <%= render "shared/filter/drawer", form: form do %>
+      <div class="space-y-6">
+        <% @filters.each do |filter| %>
+          <% next if filter[:key] == :query %>
+
+          <fieldset class="fieldset">
+            <label class="label font-bold text-sm mb-1">
+              <%= filter[:label] %>
+            </label>
+
+            <%= form.select filter[:key],
+	     options_for_select(filter[:options], params.dig(:query, filter[:key])),
+             { include_blank: "Tutti" },
+             {
+	       class: "select select-bordered w-full",
+	       data: { action: "change->search-form#submit" }
+	     } %>
+          </fieldset>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
 
 <%= render "shared/header/page" %>
 <%= render "shared/filter/active", filter_keys: @keys %>
