@@ -1,21 +1,20 @@
 <%= turbo_stream_from "disciplines" %>
 
-<% content_for :page_title, Discipline.model_name.human(count: 2) %>
-
-<% content_for :page_counter, t("search.results", count: 10) %>
+<% content_for :page_title, "Discipline" %>
 
 <% content_for :page_actions do %>
   <%= link_to [:new, :discipline],
 	      class: "btn btn-primary gap-2",
 	      data: { turbo_frame: "modal" } do %>
     <%= icon("add", size: 20) %>
-    <span class="hidden sm:inline"><%= t("actions.new") %></span>
+    <span class="hidden sm:inline"><%= t("actions.new", default: "Nuova") %></span>
   <% end %>
 <% end %>
 
 <!-- TODO filters -->
 
 <%= render "shared/header/page" %>
+
 <%= render "shared/filter/active", filter_keys: @keys %>
 
 <%= render "shared/table", pagy: @pagy do %>

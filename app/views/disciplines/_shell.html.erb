@@ -47,41 +47,39 @@
 
 <% content_for :record_actions do %>
   <div class="flex items-center gap-2">
-    <%# DROPDOWN AZIONI SECONDARIE %>
-    <div class="dropdown dropdown-end">
-      <div tabindex="0" role="button" class="btn btn-square btn-sm btn-ghost">
-        <%= icon("more", size: 20) %>
-      </div>
+    <% trigger_button = capture do %>
+      <div class="btn btn-ghost btn-square"><%= icon("more", size: 20) %></div>
+    <% end %>
 
-      <ul
-        tabindex="0"
-        class="
-          dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2
-          shadow-lg border border-base-200
-        "
-      >
-        <li>
-          <%= link_to edit_discipline_path(discipline), data: { turbo_frame: "modal" } do %>
-            <%= icon("edit", size: 16) %> Modifica
-          <% end %>
-        </li>
+    <%= render "shared/dropdown", trigger: trigger_button do %>
+      <li>
+        <%= link_to edit_discipline_path(discipline), data: { turbo_frame: "modal" } do %>
+          <%= icon("edit", size: 16) %>
+          Modifica
+        <% end %>
+      </li>
 
-        <div class="divider my-1"></div>
+      <div class="divider my-1"></div>
 
-        <li>
-          <%= link_to discipline_path(discipline), 
-          class: "text-error hover:bg-error/10",
-		      data: { turbo_method: :delete, turbo_confirm: "Sei sicuro di voler archiviare questo socio?" } do %>
-            <%= icon("delete", size: 16) %> Archivia Socio
-          <% end %>
-        </li>
-      </ul>
-    </div>
+      <li>
+        <%= link_to discipline_path(discipline),
+		    class: "text-error hover:bg-error/10",
+		    data: {
+		      turbo_method: :delete,
+		      turbo_confirm: "Sei sicuro di voler archiviare questa disciplina?"
+		    } do %>
+          <%= icon("delete", size: 16) %>
+          Archivia Disciplina
+        <% end %>
+      </li>
+    <% end %>
   </div>
 <% end %>
 
 <%# Renderizza l'header standard (che usa i content_for qui sopra) %>
+
 <%= render "shared/header/record" %>
 
 <%# --- 3. CONTENUTO DELLA VIEW --- %>
+
 <div class="mt-6"><%= yield %></div>

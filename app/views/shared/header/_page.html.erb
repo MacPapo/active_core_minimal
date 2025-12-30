@@ -18,9 +18,7 @@
       </h1>
 
       <% if content_for?(:page_counter) %>
-        <span class="text-sm text-base-content/60 font-mono tabular-nums">
-          <%= yield :page_counter %>
-        </span>
+        <span class="text-sm text-base-content/60 font-mono tabular-nums"><%= yield :page_counter %></span>
       <% end %>
     </div>
 

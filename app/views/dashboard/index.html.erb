@@ -8,7 +8,8 @@
   >
     <div>
       <h1 class="text-3xl font-bold tracking-tight flex items-center gap-2">
-        Buongiorno, <%= Current.session.user.first_name %>
+        Buongiorno,
+        <%= Current.session.user.first_name %>
         <span class="animate-pulse">👋</span>
       </h1>
 
@@ -100,6 +101,7 @@
       </div>
 
       <div class="stat-value"><%= format_money(@daily_cash.total) %></div>
+
       <div class="stat-desc text-primary-content/60">Incasso odierno</div>
     </div>
   </div>
@@ -158,9 +160,7 @@
                       </td>
 
                       <td>
-                        <span class="uppercase text-xs font-mono opacity-70">
-                          <%= sale.payment_method %>
-                        </span>
+                        <span class="uppercase text-xs font-mono opacity-70"><%= sale.payment_method %></span>
                       </td>
 
                       <td class="text-right font-bold text-primary">
@@ -179,6 +179,7 @@
             <div class="p-10 text-center flex flex-col items-center gap-2 opacity-50">
               <%= icon("sell", size: 32) %>
               <span>Nessuna vendita registrata recentemente.</span>
+
               <%= link_to "Registra la prima", new_sale_path, class: "btn btn-sm btn-primary mt-2" %>
             </div>
           <% end %>
@@ -197,11 +198,13 @@
 
           <div class="flex flex-col gap-3">
             <%= link_to new_sale_path, class: "btn btn-primary w-full shadow-md gap-2", data: { turbo_frame: "modal" } do %>
-              <%= icon("sale", size: 20) %> Nuova Vendita
+              <%= icon("sale", size: 20) %>
+              Nuova Vendita
             <% end %>
 
             <%= link_to new_member_path, class: "btn btn-outline w-full gap-2", data: { turbo_frame: "modal" } do %>
-              <%= icon("person_add", size: 20) %> Nuovo Iscritto
+              <%= icon("person_add", size: 20) %>
+              Nuovo Iscritto
             <% end %>
           </div>
         </div>
@@ -216,7 +219,8 @@
             <h3 class="font-bold">Scadenze in arrivo!</h3>
 
             <div class="text-xs">
-              Ci sono <strong class="text-lg"><%= @expiring_count %></strong>
+              Ci sono
+              <strong class="text-lg"><%= @expiring_count %></strong>
               abbonamenti in scadenza nei prossimi 7 giorni.
             </div>
           </div>
@@ -225,7 +229,7 @@
         <div class="card bg-base-100 shadow-sm border border-base-200">
           <div class="card-body p-4 text-center">
             <div class="text-success flex justify-center mb-2">
-              <%= icon("check_circle", size: 32) %>
+              <%= icon("success", size: 32) %>
             </div>
 
             <div class="font-bold text-sm">Nessuna scadenza imminente</div>

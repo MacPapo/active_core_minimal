@@ -1,3 +1,3 @@
-<%= render layout: "shared/modal", locals: { title: t(".title", name: @member.full_name) } do %>
+<%= render layout: "shared/modal", locals: { title: "Modificando #{@member.full_name}" } do %>
   <%= render "form", member: @member %>
 <% end %>

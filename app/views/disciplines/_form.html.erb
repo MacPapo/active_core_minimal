@@ -21,7 +21,7 @@
   <%# --- SEZIONE 2: REGOLE DI ACCESSO --- %>
   <fieldset class="fieldset bg-base-100 border border-base-300 p-4 rounded-box shadow-sm">
     <legend class="fieldset-legend">
-      <%= icon("verified_user", size: 14) %> Regole di Accesso
+      <%= icon("shield", size: 14) %> Regole di Accesso
     </legend>
 
     <%# TOGGLE CERTIFICATO %>
@@ -32,8 +32,7 @@
 		mancante."
     >
       <label class="label overflow-x-auto">
-        <%= f.check_box :requires_medical_certificate, class: "toggle toggle-error" %>
-        Richiede Certificato Medico?
+        <%= f.check_box :requires_medical_certificate, class: "toggle toggle-error" %> Richiede Certificato Medico?
       </label>
     </div>
 
@@ -46,8 +45,7 @@
 		pagato la quota associativa (tesseramento) valida per l'anno corrente."
     >
       <label class="label">
-        <%= f.check_box :requires_membership, class: "toggle toggle-info" %>
-        Richiede Iscrizione Annuale?
+        <%= f.check_box :requires_membership, class: "toggle toggle-info" %> Richiede Iscrizione Annuale?
       </label>
     </div>
   </fieldset>
@@ -56,10 +54,10 @@
   <div class="modal-action mt-8 flex items-center justify-end gap-2">
     <%= link_to "Annulla", disciplines_path, class: "btn btn-ghost" %>
 
-    <%= button_tag type: "submit", 
-    class: "btn btn-primary", 
-      data: { turbo_submits_with: '<span class="loading loading-dots loading-sm"></span> Salvataggio...' } do %>
-      <%= icon("save", size: 18) %> Salva Disciplina
-    <% end %>
+    <%= button_tag "Salva Disciplina", type: "submit",
+		   class: "btn btn-primary",
+		   data: {
+		     turbo_submits_with: '<span class="loading loading-dots loading-sm"></span> Salvataggio...'
+		   } %>
   </div>
 <% end %>
