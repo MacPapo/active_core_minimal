@@ -7,7 +7,7 @@ image: macpapo/activecore
 # Deploy to these servers.
 servers:
   web:
-    - 192.168.154.85
+    - 192.168.1.220
   # job:
   #   hosts:
   #     - 192.168.0.1
