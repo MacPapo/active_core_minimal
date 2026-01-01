@@ -2,7 +2,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @users = User.kept.order(role: :desc, last_name: :asc)
+    @pagy, @users = pagy(User.kept.order(role: :desc, last_name: :asc))
   end
 
   def show

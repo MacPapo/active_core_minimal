@@ -2,9 +2,10 @@ class SalesController < ApplicationController
   before_action :set_sale, only: [ :show, :destroy ]
 
   def index
-    @sales = Sale.kept
+    scope = Sale.kept
                  .includes(:member, :user)
                  .order(sold_on: :desc, created_at: :desc)
+    @pagy, @sales = pagy(scope)
   end
 
   def show

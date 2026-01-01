@@ -1,18 +1,12 @@
 class MembersController < ApplicationController
+  include FilterableActions
+
   before_action :set_member, only: [ :edit, :update, :destroy ]
 
   def index
-    @filters = Member.available_filters
-    permitted_keys = Member.allowed_filter_keys
-    filter_params = params.fetch(:query, {}).permit(*permitted_keys)
+    base_scope = Member.includes(:subscriptions)
 
-    @keys = permitted_keys
-    base_scope = Member.includes(subscriptions: :product).order(:last_name, :first_name)
-
-    filtered_scope = base_scope.apply_filters(filter_params)
-    filtered_scope = filtered_scope.kept if filter_params[:state].blank?
-
-    @members = filtered_scope
+    @pagy, @members = filter_and_paginate(base_scope)
   end
 
   def show

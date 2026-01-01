@@ -2,10 +2,12 @@
 
 <% content_for :page_title, "Soci" %>
 
+<% content_for :page_counter, t("search.results", count: @pagy.count) %>
+
 <% content_for :page_actions do %>
   <%= link_to [:new, :member],
-	      class: "btn btn-primary gap-2",
-	      data: { turbo_frame: "modal" } do %>
+      class: "btn btn-primary gap-2",
+      data: { turbo_frame: "modal" } do %>
     <%= icon("add", size: 20) %>
     <span class="hidden sm:inline">Nuovo</span>
   <% end %>
@@ -13,7 +15,7 @@
 
 <% content_for :page_search_and_filters do %>
   <%= form_with scope: :query, 
-    url: [:members], 
+    url: members_path, 
     method: :get, 
     html: {
       autocomplete: "off",
@@ -21,28 +23,25 @@
       data: { controller: "search-form" }
     } do |form| %>
     <div class="flex flex-col sm:flex-row items-stretch gap-2 w-full mb-6">
-      <%= render "shared/filter/search",
-		 form: form, 
-		 placeholder: "Cerca Mario, Luigi..." %>
-
+      <%= render "shared/filter/search", form: form, placeholder: "Cerca Mario, Luigi..." %>
       <%= render "shared/filter/trigger" %>
     </div>
 
     <%= render "shared/filter/drawer", form: form do %>
       <div class="space-y-6">
-        <% @filters.each do |filter| %>
+        <% @available_filters.each do |filter| %>
           <% next if filter[:key] == :query %>
 
           <fieldset class="fieldset">
             <label class="label font-bold text-sm mb-1"><%= filter[:label] %></label>
 
             <%= form.select filter[:key],
-	     options_for_select(filter[:options], params.dig(:query, filter[:key])),
-             { include_blank: "Tutti" },
-             {
-	       class: "select select-bordered w-full",
-	       data: { action: "change->search-form#submit" }
-	     } %>
+              options_for_select(filter[:options], params.dig(:query, filter[:key])),
+              { include_blank: "Tutti" },
+              {
+                class: "select select-bordered w-full",
+                data: { action: "change->search-form#submit" }
+              } %>
           </fieldset>
         <% end %>
       </div>
@@ -52,7 +51,7 @@
 
 <%= render "shared/header/page" %>
 
-<%= render "shared/filter/active", filter_keys: @keys %>
+<%= render "shared/filter/active", filter_keys: @available_filters.map { |f| f[:key] } %>
 
 <%= render "shared/table", pagy: @pagy do %>
   <thead>
@@ -66,7 +65,6 @@
 
   <tbody id="members">
     <%= render partial: "member_row", collection: @members, as: :member %>
-
     <% if @members.empty? %>
       <tr>
         <td colspan="4">

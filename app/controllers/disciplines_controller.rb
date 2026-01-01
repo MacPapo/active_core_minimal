@@ -2,7 +2,7 @@ class DisciplinesController < ApplicationController
   before_action :set_discipline, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @disciplines = Discipline.kept.order(:name)
+    @pagy, @disciplines = pagy(Discipline.kept.order(:name))
   end
 
   def show

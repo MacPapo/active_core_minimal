@@ -2,11 +2,10 @@ class ProductsController < ApplicationController
   before_action :set_product, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @products = Product.kept.includes(:disciplines).order(:name)
+    @pagy, @products = pagy(Product.kept.includes(:disciplines).order(:name))
   end
 
-  def show
-  end
+  def show; end
 
   def new
     initial_disciplines = params[:discipline_id] ? [ params[:discipline_id] ] : []
