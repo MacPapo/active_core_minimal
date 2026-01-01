@@ -12,7 +12,7 @@ class Sale < ApplicationRecord
     credit_card: 2,
     bank_transfer: 3,
     other: 4
-  }, default: :cash, validate: true
+  }, default: :credit_card, validate: true
 
   validates :sold_on, presence: true
   validates :amount_cents, numericality: { greater_than_or_equal_to: 0 }
