@@ -48,4 +48,4 @@
 # Pagy::Calendar.localize_with_rails_i18n_gem(*your_locales)
 
 # DaisyUI
-require "pagy/pagy_daisyui"
+require Rails.root.join("lib/pagy/pagy_daisyui")
