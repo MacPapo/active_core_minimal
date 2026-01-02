@@ -1,4 +1,3 @@
-<div>
-  <h1 class="font-bold text-4xl">Subscriptions#edit</h1>
-  <p>Find me in app/views/subscriptions/edit.html.erb</p>
-</div>
+<%= render layout: "shared/modal", locals: { title: "Modificando #{@subscription.product.name}" } do %>
+  <%= render "form", subscription: @subscription %>
+<% end %>

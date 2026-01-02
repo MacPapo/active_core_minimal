@@ -1,15 +1,15 @@
 <%= turbo_stream_from "products" %>
 
-<% content_for :page_title, Product.model_name.human(count: 2) %>
+<% content_for :page_title, "Prodotti" %>
 
-<% content_for :page_counter, t("search.results", count: @pagy.count) %>
+<%# content_for :page_counter, t("search.results", count: @pagy.count) %>
 
 <% content_for :page_actions do %>
   <%= link_to [:new, :product],
 	      class: "btn btn-primary gap-2",
 	      data: { turbo_frame: "modal" } do %>
     <%= icon("add", size: 20) %>
-    <span class="hidden sm:inline"><%= t("actions.new") %></span>
+    <span class="hidden sm:inline"><%= t("actions.new", default: "Nuovo") %></span>
   <% end %>
 <% end %>
 

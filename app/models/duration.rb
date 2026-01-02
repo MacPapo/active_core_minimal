@@ -3,8 +3,6 @@
 class Duration
   attr_reader :product, :preference_date
 
-  # Mappa i giorni ai mesi logici.
-  # Se un prodotto ha questa durata esatta, applichiamo la logica "Calendario".
   CALENDAR_DURATIONS = {
     30 => 1,   # Mensile
     90 => 3,   # Trimestrale
@@ -37,40 +35,74 @@ class Duration
     end
 
     def calculate_institutional
-      months_count = CALENDAR_DURATIONS[product.duration_days]
-
-      if months_count
-        # È un pacchetto "Solare" (Mensile, Trimestrale...) -> SNAP AL CALENDARIO
-        calculate_calendar_aligned(months_count)
+      case product.duration_days
+      when 365, 366
+        # NUOVA REGOLA ANNUALE: Rolling puro (Data scelta -> +1 anno)
+        # Ignora Anno Sportivo.
+        calculate_rolling_annual
+      when 90
+        # NUOVA REGOLA TRIMESTRALE: Snap al 1° del mese -> +3 mesi
+        # Ignora Anno Sportivo.
+        months = CALENDAR_DURATIONS[90]
+        calculate_calendar_aligned(months, enforce_sport_year: false)
       else
-        # È un pacchetto "a giorni" (es. Settimanale) -> CONTEGGIO PURO
-        calculate_days_pure
+        # ALTRI (es. Mensile, Semestrale):
+        # Mantengo la logica vecchia (Snap + Limite Anno Sportivo) per sicurezza?
+        # Se vuoi liberare anche loro, metti enforce_sport_year: false
+        months_count = CALENDAR_DURATIONS[product.duration_days]
+        if months_count
+          calculate_calendar_aligned(months_count, enforce_sport_year: true)
+        else
+          calculate_days_pure(enforce_sport_year: true)
+        end
       end
     end
 
-    def calculate_calendar_aligned(months)
-      # 1. SNAP START: Qualsiasi data arrivi (es. 15 Gennaio), forziamo al 1° del mese.
-      effective_start = preference_date.beginning_of_month
+    # --- CALCOLATORI SPECIFICI ---
 
-      # 2. CALCOLO FINE: Aggiungiamo i mesi e prendiamo l'ultimo giorno del mese risultante.
-      # Es. Mensile (1 mese): 01/01 + (1-1) mesi = Gennaio -> Fine mese = 31/01
-      # Es. Trimestrale (3 mesi): 01/01 + (3-1) mesi = Marzo -> Fine mese = 31/03
-      theoretical_end = effective_start.advance(months: months - 1).end_of_month
+    def calculate_rolling_annual
+      # Iscrizione annuale è dal giorno in cui lo fanno ad 1 anno dopo
+      # Esempio: 2 Gennaio 2025 -> 1 Gennaio 2026
+      effective_start = preference_date
+      theoretical_end = effective_start.advance(years: 1).yesterday
 
-      apply_sport_year_limit(effective_start, theoretical_end)
+      { start_date: effective_start, end_date: theoretical_end }
     end
 
-    def calculate_days_pure
+    def calculate_calendar_aligned(months, enforce_sport_year: true)
+      # Trimestrale: dal primo del mese in cui lo fanno a 3 mesi dopo
+      effective_start = preference_date.beginning_of_month
+
+      # Es. 1 Gennaio + (3-1) mesi = Marzo. Fine mese = 31 Marzo.
+      theoretical_end = effective_start.advance(months: months - 1).end_of_month
+
+      if enforce_sport_year
+        apply_sport_year_limit(effective_start, theoretical_end)
+      else
+        { start_date: effective_start, end_date: theoretical_end }
+      end
+    end
+
+    def calculate_days_pure(enforce_sport_year: true)
       effective_start = preference_date
-      # Es. 7 giorni: 1 Gen + 7 giorni = 8 Gen. Yesterday = 7 Gen.
       theoretical_end = effective_start.advance(days: product.duration_days).yesterday
 
-      apply_sport_year_limit(effective_start, theoretical_end)
+      if enforce_sport_year
+        apply_sport_year_limit(effective_start, theoretical_end)
+      else
+        { start_date: effective_start, end_date: theoretical_end }
+      end
     end
 
     def apply_sport_year_limit(start_date, end_date)
       limit_date = SportYear.end_date_for(start_date)
+      # Se la data di inizio è già oltre il limite (es. abbonamento comprato a fine anno per l'anno dopo),
+      # bisogna gestire il caso, ma per ora teniamo la logica base:
       final_end = [ end_date, limit_date ].min
+
+      # Safety check: se start > final_end (es. compro oggi ma l'anno è finito ieri),
+      # gestire eccezione o ritornare date coerenti?
+      # Per ora ci fidiamo che SportYear.end_date_for ritorni la fine dell'anno CORRENTE alla data.
 
       { start_date: start_date, end_date: final_end }
     end

@@ -1,20 +1,15 @@
-<%
-  # Logica visuale inline per lo stato (veloce e chiara)
-  is_active = Date.current.between?(subscription.start_date, subscription.end_date)
-  is_future = Date.current < subscription.start_date
-  is_expired = Date.current > subscription.end_date
-%>
+<% is_active = Date.current.between?(subscription.start_date, subscription.end_date)
+is_future = Date.current < subscription.start_date
+is_expired = Date.current > subscription.end_date %>
 
 <tr>
   <td>
     <% if is_active %>
-      <span class="badge badge-success gap-2 text-white font-bold">
-        Attivo
-      </span>
+      <span class="badge badge-success gap-2 text-white font-bold">Attivo</span>
     <% elsif is_future %>
-      <span class="badge badge-warning gap-2"> Futuro </span>
+      <span class="badge badge-warning gap-2">Futuro</span>
     <% else %>
-      <span class="badge badge-ghost gap-2 opacity-50"> Scaduto </span>
+      <span class="badge badge-ghost gap-2 opacity-50">Scaduto</span>
     <% end %>
   </td>
 
@@ -42,8 +37,7 @@
       </div>
     <% else %>
       <span class="opacity-30 text-xs font-mono">
-        <%= display_value((subscription.end_date - subscription.start_date).to_i) %>
-        gg tot
+        <%= display_value((subscription.end_date - subscription.start_date).to_i) %> gg tot
       </span>
     <% end %>
   </td>
@@ -65,9 +59,7 @@
             <% end %>
           </span>
         <% else %>
-          <span>
-            <%= format_datetime(subscription.sale.created_at, format: :long) %>
-          </span>
+          <span><%= format_datetime(subscription.sale.created_at, format: :long) %></span>
         <% end %>
       </div>
     <% end %>
@@ -75,6 +67,11 @@
 
   <td class="text-right w-1 pr-4 align-middle">
     <div class="join">
+      <%= link_to [:edit, subscription],
+		  class: "join-item btn btn-square btn-xs btn-ghost tooltip tooltip-left",
+		  data: { turbo_frame: "modal", tip: "Modifica" } do %>
+	<%= icon("edit", size: 16) %>
+      <% end %>
       <% if subscription.end_date >= 7.days.ago.to_date %>
         <%= link_to [subscription],
 		    class: "join-item text-error btn btn-square btn-xs btn-ghost tooltip tooltip-left",

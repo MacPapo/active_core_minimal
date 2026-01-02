@@ -21,9 +21,7 @@
 
           <div class="stat-desc">
             <% if @sale.discarded? %>
-              <span class="text-error font-bold flex items-center gap-1">
-                <%= icon("close", size: 14) %> ANNULLATO
-              </span>
+              <span class="text-error font-bold flex items-center gap-1"><%= icon("close", size: 14) %> ANNULLATO</span>
             <% else %>
               <span class="text-success flex items-center gap-1">
                 <%= icon("success", size: 14) %> Pagamento Confermato
@@ -73,8 +71,7 @@
           </div>
 
           <div class="stat-desc text-xs">
-            Anno <%= display_value(@sale.receipt_year) %> - Seq.
-            <%= display_value(@sale.receipt_sequence) %>
+            Anno <%= display_value(@sale.receipt_year) %> - Seq. <%= display_value(@sale.receipt_sequence) %>
           </div>
         </div>
       </div>
@@ -109,7 +106,8 @@
 
               <%# Link al prodotto originale (se esiste ancora) %>
               <%= link_to [@sale.product], class: "btn btn-xs btn-ghost gap-1 opacity-50 hover:opacity-100" do %>
-                Vedi Prodotto Originale <%= icon("arrow_right", size: 12) %>
+                Vedi Prodotto Originale
+                <%= icon("arrow_right", size: 12) %>
               <% end %>
             </div>
 
@@ -130,9 +128,7 @@
                   <%= @sale.notes %>
                 </div>
               <% else %>
-                <span class="text-sm opacity-40 italic">
-                  Nessuna nota aggiuntiva.
-                </span>
+                <span class="text-sm opacity-40 italic">Nessuna nota aggiuntiva.</span>
               <% end %>
             </div>
           </div>
@@ -154,9 +150,7 @@
                   class="rounded-full w-24 sm:w-14"
                   style="<%= @sale.member.avatar_color_style %>"
                 >
-                  <span class="font-bold font-mono text-3xl sm:text-lg">
-                    <%= @sale.member.initials %>
-                  </span>
+                  <span class="font-bold font-mono text-3xl sm:text-lg"><%= @sale.member.initials %></span>
                 </div>
               </div>
 
@@ -186,9 +180,7 @@
                   class="rounded-full w-24 sm:w-14"
                   style="<%= @sale.user.avatar_color_style %>"
                 >
-                  <span class="font-bold font-mono text-3xl sm:text-lg">
-                    <%= @sale.user.initials %>
-                  </span>
+                  <span class="font-bold font-mono text-3xl sm:text-lg"><%= @sale.user.initials %></span>
                 </div>
               </div>
 
@@ -206,9 +198,7 @@
             <div class="text-xs opacity-50 flex justify-between">
               <span>Creato il:</span>
 
-              <span class="font-mono">
-                <%= l(@sale.created_at, format: :short) %>
-              </span>
+              <span class="font-mono"><%= l(@sale.created_at, format: :short) %></span>
             </div>
           </div>
         </div>
@@ -225,8 +215,8 @@
 
           <div class="text-xs">
             Questa vendita è stata stornata il
-            <%= l(@sale.discarded_at, format: :short) %>. Non è valida ai fini
-            contabili e non dovrebbe generare accessi.
+            <%= l(@sale.discarded_at, format: :short) %>
+            . Non è valida ai fini contabili e non dovrebbe generare accessi.
           </div>
         </div>
       </div>

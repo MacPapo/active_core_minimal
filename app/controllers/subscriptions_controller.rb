@@ -5,7 +5,7 @@ class SubscriptionsController < ApplicationController
 
   def update
     if @subscription.update(subscription_params)
-      redirect_to @subscription.member, notice: "Abbonamento aggiornato."
+      redirect_to [ @subscription.member, :subscriptions ], notice: "Abbonamento aggiornato con successo."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -13,7 +13,7 @@ class SubscriptionsController < ApplicationController
 
   def destroy
     if @subscription.discard!
-      redirect_back(fallback_location: @subscription.member, status: :see_other, notice: "Abbonamento e relativa vendita annullati.")
+      redirect_back(fallback_location: @subscription.member, status: :see_other, notice: "Abbonamento annullato (Soft Delete).")
     else
       redirect_back(fallback_location: @subscription.member, status: :see_other, alert: "Impossibile annullare l'abbonamento.")
     end
@@ -25,6 +25,12 @@ class SubscriptionsController < ApplicationController
     end
 
     def subscription_params
-      params.require(:subscription).permit(:start_date, :end_date)
+      permitted = [ :start_date ]
+
+      if current_user.respond_to?(:admin?) && current_user.admin?
+        permitted << :end_date
+      end
+
+      params.require(:subscription).permit(permitted)
     end
 end

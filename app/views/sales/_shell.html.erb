@@ -23,9 +23,7 @@
 <% end %>
 
 <% content_for :record_title do %>
-  <span class="font-mono tracking-tight">
-    <%= sale.product_name_snapshot %>
-  </span>
+  <span class="font-mono tracking-tight"><%= sale.product_name_snapshot %></span>
 <% end %>
 
 <% content_for :record_subtitle do %>
@@ -44,20 +42,19 @@
 
     <%# Stato Annullato %>
     <% if sale.discarded? %>
-      <span class="badge badge-error badge-sm gap-1">
-        <%= icon("close", size: 12) %> ANNULLATA
-      </span>
+      <span class="badge badge-error badge-sm gap-1"><%= icon("close", size: 12) %> ANNULLATA</span>
     <% end %>
   </div>
 <% end %>
 
 <% content_for :record_actions do %>
   <div class="flex items-center gap-2">
-    <% if sale.cash? && sale.kept? %>
+    <% if (sale.cash? || sale.credit_card?) && sale.kept? %>
       <%= link_to sale_path(sale, format: :pdf),
 		  class: "btn btn-primary btn-sm gap-2",
 		  target: "_blank" do %>
-        <%= icon("print", size: 16) %> Stampa PDF
+        <%= icon("print", size: 16) %>
+        Stampa PDF
       <% end %>
     <% end %>
 
@@ -78,7 +75,8 @@
           <%= link_to sale_path(sale), 
           class: "text-error hover:bg-error/10",
 		      data: { turbo_method: :delete, turbo_confirm: "Sei sicuro di voler annullare questa transazione? Questa azione annullera' anche l'abbonamento collegato." } do %>
-            <%= icon("delete", size: 16) %> Annulla Transazione
+            <%= icon("delete", size: 16) %>
+            Annulla Transazione
           <% end %>
         </li>
       </ul>
@@ -87,7 +85,9 @@
 <% end %>
 
 <%# Renderizza l'header standard (che usa i content_for qui sopra) %>
+
 <%= render "shared/header/record" %>
 
 <%# --- 3. CONTENUTO DELLA VIEW --- %>
+
 <div class="mt-6"><%= yield %></div>

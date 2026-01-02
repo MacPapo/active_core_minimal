@@ -26,9 +26,7 @@
       <%= f.text_field :username, required: true, class: "input w-full", placeholder: "mario.rossi" %>
 
       <p class="label">
-        <span class="label-text-alt text-base-content/60">
-          Usato per il login. Solo lettere minuscole e numeri.
-        </span>
+        <span class="label-text-alt text-base-content/60">Usato per il login. Solo lettere minuscole e numeri.</span>
       </p>
     </div>
   </fieldset>
@@ -77,8 +75,8 @@
     <% if user.persisted? %>
       <p class="label">
         <span class="label-text-alt text-base-content/60">
-          <%= icon("info", size: 12, class: "inline mr-1") %> Lascia i campi
-          password vuoti per mantenere quella attuale.
+          <%= icon("info", size: 12, class: "inline mr-1") %>
+          Lascia i campi password vuoti per mantenere quella attuale.
         </span>
       </p>
     <% end %>
@@ -88,10 +86,8 @@
   <div class="modal-action mt-8 flex items-center justify-end gap-2">
     <%= link_to "Annulla", users_path, class: "btn btn-ghost" %>
 
-    <%= button_tag type: "submit", 
-    class: "btn btn-primary", 
-      data: { turbo_submits_with: '<span class="loading loading-dots loading-sm"></span> Salvataggio...' } do %>
-      <%= icon("save", size: 18) %> Salva Utente
-    <% end %>
+    <%= button_tag "Salva Utente", type: "submit",
+		   class: "btn btn-primary",
+		   data: { turbo_submits_with: '<span class="loading loading-dots loading-sm"></span> Salvataggio...' } %>
   </div>
 <% end %>

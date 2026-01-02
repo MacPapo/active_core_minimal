@@ -1,8 +1,10 @@
 class PaymentReceiptPdf < ApplicationPdf
   # --- LAYOUT CONSTANTS ---
-  HEADER_LEFT_WIDTH    = 360
-  HEADER_RIGHT_WIDTH   = 180
-  HEADER_RIGHT_X       = 350
+  # MODIFICA SPAZI: Allargo la destra, stringo la sinistra per non sovrapporre
+  HEADER_RIGHT_WIDTH   = 240  # Era 180 (Più spazio per il numero lungo)
+  HEADER_RIGHT_X       = 300  # Era 350 (Spostato a sx per farci stare i 240pt)
+  HEADER_LEFT_WIDTH    = 290  # Era 360 (Ridotto per non toccare la destra)
+
   RECIPIENT_BOX_WIDTH  = 400
   TABLE_DESC_COL_WIDTH = 380
 
@@ -23,9 +25,16 @@ class PaymentReceiptPdf < ApplicationPdf
     # --- DESTRA (Dati Ricevuta) ---
     float do
       bounding_box([ HEADER_RIGHT_X, cursor ], width: HEADER_RIGHT_WIDTH) do
-        code = @sale.respond_to?(:receipt_code) ? @sale.receipt_code : "##{@sale.id}"
+        # MODIFICA LOGICA:
+        # Se c'è il codice ricevuta -> "RICEVUTA N. 123/2025"
+        # Se NON c'è -> Scriviamo "RIEPILOGO" (o nulla) ma NON "Ricevuta N."
+        if @sale.respond_to?(:receipt_code) && @sale.receipt_code.present?
+          text "RICEVUTA N. #{@sale.receipt_code}", size: FONT_SIZE_L, style: :bold, align: :right, color: COLOR_ACCENT
+        else
+          # Titolo alternativo per quando non è fiscale
+          text "RIEPILOGO", size: FONT_SIZE_L, style: :bold, align: :right, color: COLOR_SECONDARY
+        end
 
-        text "RICEVUTA N. #{code}", size: FONT_SIZE_L, style: :bold, align: :right, color: COLOR_ACCENT
         text "Data: #{I18n.l(@sale.sold_on)}", size: FONT_SIZE_M, align: :right
         move_down GAP_XS
         text "Pagamento: #{@sale.payment_method.humanize}", size: FONT_SIZE_S, align: :right
@@ -95,7 +104,6 @@ class PaymentReceiptPdf < ApplicationPdf
       end
 
     description = "#{prefix}: #{@product_name}"
-    # --- FINE MODIFICA ---
 
     # Se è un abbonamento, mostriamo le date
     if @sale.subscription
