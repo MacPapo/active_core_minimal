@@ -35,7 +35,7 @@ gem "solid_cable"
 gem "phonelib", "~> 0.10.15"
 gem "pagy", "~> 43.2"
 
-gem "prawn", "~> 2.4"
+gem "prawn", "~> 2.5"
 gem "prawn-table", "~> 0.2.2"
 
 # Reduces boot times through caching; required in config/boot.rb
