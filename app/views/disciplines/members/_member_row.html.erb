@@ -3,39 +3,25 @@
    is_expired = subscription.end_date < Date.current 
    days_diff = (Date.current - subscription.end_date).to_i.abs %>
 
-<tr class="group transition-colors duration-200 ease-in-out border-l-4 <%= is_expired ? 'bg-red-50/60 border-red-500 hover:bg-red-50' : 'bg-white border-transparent hover:bg-gray-50' %>">
-  <td class="px-6 py-4 whitespace-nowrap">
+<tr>
+  <td>
     <% if is_expired %>
-      <div class="flex items-center gap-2">
-        <span class="relative flex h-2.5 w-2.5">
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-        </span>
-
-        <span class="text-xs font-bold text-red-700 uppercase tracking-wide">
-          Scaduto
-        </span>
+      <div class="inline-grid *:[grid-area:1/1] me-2">
+        <div class="status status-error animate-ping"></div>
+        <div class="status status-error"></div>
       </div>
+      <span class="text-xs font-bold text-red-700 uppercase tracking-wide">
+        Scaduto
+      </span>
     <% else %>
-      <div class="flex items-center gap-2">
-        <span class="relative flex h-2.5 w-2.5">
-          <span
-            class="
-              animate-ping absolute inline-flex h-full w-full rounded-full
-              bg-green-400 opacity-75
-            "
-          ></span>
-
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-        </span>
-
-        <span class="text-xs font-bold text-green-700 uppercase tracking-wide">
-          Attivo
-        </span>
-      </div>
+      <div class="status status-success me-2"></div>
+      <span class="text-xs font-bold text-green-700 uppercase tracking-wide">
+        Attivo
+      </span>
     <% end %>
   </td>
 
-  <td class="px-6 py-4 whitespace-nowrap">
+  <td>
     <div class="flex items-center">
       <div class="avatar avatar-placeholder">
         <div class="rounded-full w-10" style="<%= member.avatar_color_style %>">
@@ -46,23 +32,18 @@
       </div>
 
       <div class="ml-4">
-        <%= link_to member.full_name, member_path(member), class: "text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors" %>
+        <%= link_to member.full_name, member_path(member), class: "font-bold text-base-content hover:text-primary transition-colors truncate" %>
       </div>
     </div>
   </td>
 
-  <td class="px-6 py-4 whitespace-nowrap">
-    <span
-      class="
-        inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium
-        bg-white border border-gray-200 text-gray-700 shadow-sm
-      "
-    >
+  <td>
+    <span class="badge badge-ghost text-xs">
       <%= display_value(subscription.product.name) %>
     </span>
   </td>
 
-  <td class="px-6 py-4 whitespace-nowrap">
+  <td>
     <div class="flex flex-col">
       <span class="text-sm font-mono font-medium tabular-nums <%= is_expired ? 'text-red-700' : 'text-gray-900' %>">
         <%= format_date(subscription.end_date, format: :default) %>
@@ -84,24 +65,9 @@
 
   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
     <%= link_to new_sale_path(member_id: member.id, renew_subscription_id: subscription.id),
-		class: "group/btn inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-indigo-50 hover:text-indigo-600 hover:ring-indigo-200 transition-all",
+		class: "btn btn-primary gap-2",
 		data: { turbo_frame: "modal" } do %>
-      <svg
-        class="
-          h-4 w-4 text-gray-400 group-hover/btn:text-indigo-600
-          transition-colors
-        "
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-        />
-      </svg>
+      <%= icon("reset", size: 20) %>
       Rinnova
     <% end %>
   </td>

@@ -33,7 +33,9 @@
           <% next if filter[:key] == :query %>
 
           <fieldset class="fieldset">
-            <label class="label font-bold text-sm mb-1"><%= filter[:label] %></label>
+            <label class="label font-bold text-sm mb-1">
+              <%= filter[:label] %>
+            </label>
 
             <%= form.select filter[:key],
               options_for_select(filter[:options], params.dig(:query, filter[:key])),
@@ -65,13 +67,14 @@
 
   <tbody id="members">
     <%= render partial: "member_row", collection: @members, as: :member %>
+
     <% if @members.empty? %>
       <tr>
         <td colspan="4">
           <%= render "shared/empty_state", 
-          icon_name: "group_off", 
-          title: t("search.results.zero"), 
-          message: t("search.results.hint") %>
+          icon_name: "filter_off", 
+          title: t("search.results.zero", default: "Zero"), 
+          message: t("search.results.hint", default: "Nessun risultato per questa ricerca") %>
         </td>
       </tr>
     <% end %>

@@ -22,6 +22,12 @@ module Authentication
       resume_session || request_authentication
     end
 
+    def require_admin
+      unless current_user&.admin?
+        redirect_to root_path, alert: "Non disponi dei permessi necessari per accedere a questa sezione."
+      end
+    end
+
     def resume_session
       Current.session ||= find_session_by_cookie
     end

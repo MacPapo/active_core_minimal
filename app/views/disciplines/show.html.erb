@@ -24,7 +24,9 @@
 
               <div class="text-sm opacity-70">
                 <% if @discipline.requires_medical_certificate? %>
-                  <span class="text-error font-medium">Richiesto per l'ingresso</span>
+                  <span class="text-error font-medium">
+                    Richiesto per l'ingresso
+                  </span>
                 <% else %>
                   Non richiesto
                 <% end %>
@@ -45,7 +47,9 @@
 
               <div class="text-sm opacity-70">
                 <% if @discipline.requires_membership? %>
-                  <span class="text-info font-medium">Quota annuale obbligatoria</span>
+                  <span class="text-info font-medium">
+                    Quota annuale obbligatoria
+                  </span>
                 <% else %>
                   Accesso libero
                 <% end %>
@@ -65,11 +69,14 @@
             items-center gap-2
           "
         >
-          <%= icon("category", size: 16) %> Prodotti che includono questa disciplina
+          <%= icon("category", size: 16) %> Prodotti che includono questa
+          disciplina
         </h3>
 
         <%# Piccolo contatore %>
-        <span class="badge badge-sm badge-ghost"><%= display_value(@related_products.count) %></span>
+        <span class="badge badge-sm badge-ghost">
+          <%= display_value(@related_products.count) %>
+        </span>
       </div>
 
       <% if @related_products.any? %>

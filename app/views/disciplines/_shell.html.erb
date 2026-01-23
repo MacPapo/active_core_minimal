@@ -20,7 +20,7 @@
 
         <li>
           <%= active_link_to discipline_members_path(discipline), active: :exclusive do %>
-            <%= icon("badge", size: 18) %>
+            <%= icon("group", size: 18) %>
             <%= t("disciplines.sidebar.members", default: "Registro Iscritti") %>
           <% end %>
         </li>
@@ -54,8 +54,7 @@
     <%= render "shared/dropdown", trigger: trigger_button do %>
       <li>
         <%= link_to edit_discipline_path(discipline), data: { turbo_frame: "modal" } do %>
-          <%= icon("edit", size: 16) %>
-          Modifica
+          <%= icon("edit", size: 16) %> Modifica
         <% end %>
       </li>
 
@@ -68,8 +67,7 @@
 		      turbo_method: :delete,
 		      turbo_confirm: "Sei sicuro di voler archiviare questa disciplina?"
 		    } do %>
-          <%= icon("delete", size: 16) %>
-          Archivia Disciplina
+          <%= icon("delete", size: 16) %> Archivia Disciplina
         <% end %>
       </li>
     <% end %>

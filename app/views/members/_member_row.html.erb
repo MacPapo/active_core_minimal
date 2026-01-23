@@ -43,12 +43,6 @@
 
     <%# 2. ABBONAMENTI FLOW LATERALE %>
     <td class="align-middle w-[45%]">
-      <%#
-        QUI IL CAMBIAMENTO: 
-        1. Usiamo il metodo del model `relevant_subscriptions`
-        2. CSS: flex-wrap per andare a capo, flex-row (default) per stare affiancati
-      %>
-
       <div class="flex flex-wrap gap-2 items-center content-start">
         <% subs = member.relevant_subscriptions %>
 
@@ -59,11 +53,11 @@
                is_expiring_soon = days_left.between?(0, 7)
                
                wrapper_class, icon_name = if is_expired
-                  ["bg-error/10 border-error/30 text-error-content hover:bg-error/20", "warning"]
+                  ["bg-error/10 border-error/30 hover:bg-error/20", "warning"]
                elsif is_expiring_soon
-                  ["bg-warning/10 border-warning/30 text-warning-content hover:bg-warning/20", "clock"]
+                  ["bg-warning/10 border-warning/30 hover:bg-warning/20", "clock"]
                else
-                  ["bg-base-100 border-base-300 text-base-content/70 hover:border-base-400", "success"]
+                  ["bg-base-100 border-base-300 hover:border-base-400", "success"]
                end
                
                # Mostra il tasto rinnovo se scaduto o scade tra poco

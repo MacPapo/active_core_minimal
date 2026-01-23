@@ -1,4 +1,5 @@
 class SalesController < ApplicationController
+  before_action :require_admin, only: [ :index ]
   before_action :set_sale, only: [ :show, :destroy ]
 
   def index

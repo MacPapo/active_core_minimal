@@ -19,7 +19,7 @@ active_filters = filter_params.to_h.reject { |_, v| v.blank? } %>
     <%= link_to url_for(params.to_unsafe_h.merge(query: filter_params.except(*filter_keys))),
 		data: { turbo: "false" },
 		class: "btn btn-xs btn-ghost" do %>
-      <%= t("search.reset") %>
+      <%# = t("search.reset") %> Annulla
     <% end %>
   </div>
 <% end %>
